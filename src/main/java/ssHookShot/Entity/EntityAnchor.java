@@ -315,6 +315,8 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
 
             if (movingobjectposition != null)
             {
+                dist = shooter.getDistanceToEntity(this);
+
                 if (movingobjectposition.entityHit != null && movingobjectposition.entityHit != this.shooter)
                 {
                     this.hitEntity = movingobjectposition.entityHit;
@@ -445,7 +447,7 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
 
     public void setDead()
     {
-        if(!this.worldObj.isRemote)
+        if(!worldObj.isRemote)
             ((ItemMoveLeggings) HookShot.instance.moveLeg).アンカー解除(this.shooter,this.サイド);
         super.setDead();
     }

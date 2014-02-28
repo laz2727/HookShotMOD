@@ -8,13 +8,15 @@ import ssHookShot.client.MoveHandler;
 public class AnchorPullPacket extends AbstractPacket
 {
     double x,y,z;
+    int flag;
 
     public AnchorPullPacket() {}
 
-    public AnchorPullPacket(double x, double y, double z) {
+    public AnchorPullPacket(double x, double y, double z, int flag) {
         this.x = x;
         this.y = y;
         this.z = z;
+        this.flag = flag;
     }
 
     @Override
@@ -22,6 +24,7 @@ public class AnchorPullPacket extends AbstractPacket
         buffer.writeDouble(x);
         buffer.writeDouble(y);
         buffer.writeDouble(z);
+        buffer.writeInt(flag);
     }
 
     @Override
@@ -29,6 +32,7 @@ public class AnchorPullPacket extends AbstractPacket
         MoveHandler.x = buffer.readDouble();
         MoveHandler.y = buffer.readDouble();
         MoveHandler.z = buffer.readDouble();
+        MoveHandler.flag = buffer.readInt();
     }
 
     @Override

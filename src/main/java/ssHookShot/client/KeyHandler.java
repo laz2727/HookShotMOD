@@ -25,7 +25,7 @@ public class KeyHandler {
     private KeyBinding keyLeftAnchorRec = new KeyBinding("LeftAnchorRec", Keyboard.KEY_Z, "HookShot");
     private KeyBinding keyRightAnchorExtend = new KeyBinding("RightAnchorExtend", Keyboard.KEY_G, "HookShot");
     private KeyBinding keyLeftAnchorExtend = new KeyBinding("LeftAnchorExtend", Keyboard.KEY_H, "HookShot");
-    private KeyBinding keyAnchorRec = new KeyBinding("AnchorRec", Keyboard.KEY_N, "HookShot");
+    private KeyBinding keyAnchorRec = new KeyBinding("AnchorRec", Keyboard.KEY_Y, "HookShot");
     private KeyBinding keyOpenGUI = new KeyBinding("OpenGUI", Keyboard.KEY_F, "HookShot");
     private KeyBinding keyReload = new KeyBinding("Reload", Keyboard.KEY_R, "HookShot");
     private KeyBinding key = new KeyBinding("投げる", Keyboard.KEY_C, "HookShot");
@@ -51,10 +51,10 @@ public class KeyHandler {
         if (keyMode.isPressed()) {
             keyData.add(DataManager.keyMode);
         }
-        if (keyRightAnchorShot.isPressed()) {
+        if (Keyboard.isKeyDown(keyRightAnchorShot.getKeyCode())) {
             keyData.add(DataManager.keyRightAnchorShot);
         }
-        if (keyLeftAnchorShot.isPressed()) {
+        if (Keyboard.isKeyDown(keyLeftAnchorShot.getKeyCode())) {
             keyData.add(DataManager.keyLeftAnchorShot);
         }
         if (Keyboard.isKeyDown(keyRightAnchorRec.getKeyCode())) {

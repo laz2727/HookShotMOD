@@ -1,5 +1,6 @@
 package ssHookShot;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -9,11 +10,14 @@ import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
+import cpw.mods.fml.relauncher.Side;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.client.IItemRenderer;
+import net.minecraftforge.client.MinecraftForgeClient;
 import ssHookShot.Entity.EntityAnchor;
 import ssHookShot.Entity.EntityKenn;
 import ssHookShot.item.ItemKenn;
@@ -48,7 +52,6 @@ public class HookShot {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
-        proxy.register();
         NetworkRegistry.INSTANCE.registerGuiHandler(this, this.proxy);
         EntityRegistry.registerModEntity(EntityAnchor.class, "entityAnchor", 0, this, 250, 1, true);
         EntityRegistry.registerModEntity(EntityKenn.class, "entityHa", 1, this, 250, 1,true);
@@ -133,6 +136,9 @@ public class HookShot {
     @Mod.EventHandler
     public void initialise(FMLInitializationEvent evt) {
         packetPipeline.initialise();
+
+        proxy.register();
+
     }
 
     @Mod.EventHandler

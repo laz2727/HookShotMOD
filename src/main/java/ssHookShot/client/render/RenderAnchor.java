@@ -95,7 +95,7 @@ public class RenderAnchor extends Render
             double d0 = -Math.cos(((double)mc.thePlayer.rotationYaw+90+サイド) * Math.PI / 180.0D) * 0.4D;
             double d1 = -Math.sin(((double) mc.thePlayer.rotationYaw + 90 + サイド) * Math.PI / 180.0D) * 0.4D;
             double d3 = mc.thePlayer.posX+d0;
-            double d4 = mc.thePlayer.posY-0.6F;
+            double d4 = mc.thePlayer.posY+mc.thePlayer.getEyeHeight();
             double d5 = mc.thePlayer.posZ+d1;
             double d6 = mc.thePlayer != Minecraft.getMinecraft().thePlayer ? (double)mc.thePlayer.getEyeHeight() : 0.0D;
 

@@ -6,7 +6,6 @@ import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityBoat;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemArmor;
@@ -26,10 +25,10 @@ import ssHookShot.client.ClientProxy;
 import ssHookShot.system.DataManager;
 
 public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
-    public WeakHashMap<EntityPlayer, EntityAnchor> 左アンカーマップ = new WeakHashMap<EntityPlayer, EntityAnchor>();
-    public WeakHashMap<EntityPlayer, EntityAnchor> 右アンカーマップ = new WeakHashMap<EntityPlayer, EntityAnchor>();
+    public WeakHashMap<EntityPlayer, EntityAnchor> rightAnchorMap = new WeakHashMap<EntityPlayer, EntityAnchor>();
+    public WeakHashMap<EntityPlayer, EntityAnchor> leftAnchorMap = new WeakHashMap<EntityPlayer, EntityAnchor>();
 
-    private ArmorProperties アーマープロパティ = new ArmorProperties(0, 0, 0);
+    private ArmorProperties armorProperty = new ArmorProperties(0, 0, 0);
 
     public ItemMoveLeggings(ArmorMaterial par2EnumArmorMaterial, int par4) {
         super(par2EnumArmorMaterial, 0, par4);
@@ -81,7 +80,6 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
             double y = 0;
             double z = 0;
             double flag = 0;
-            double flag2 = 0;
 
             if (DataManager.isKeyPress(player, DataManager.keyRightAnchorShot)) {
                 アンカー発射(0, player, 6.0F, itemStack);
@@ -91,57 +89,13 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                 アンカー発射(1, player, 6.0F, itemStack);
             }
 
-            if (DataManager.isKeyPress(player, DataManager.keyRightAnchorRec) || DataManager.PlayerMode(player, DataManager.modeAuto)) {
-                double[] xyz = アンカー巻き取り(0, player, itemStack);
-                x += xyz[0];
-                y += xyz[1];
-                z += xyz[2];
-                flag = xyz[3];
-            } else if (DataManager.isKeyPress(player, DataManager.keyRightAnchorExtend)) {
-                ワイヤー伸ばす(0, player, itemStack, 0.1D);
-                double[] xyz = 距離を保つ(0, player, itemStack);
-                x += xyz[0];
-                y += xyz[1];
-                z += xyz[2];
-                flag = xyz[3];
-            } else {
-                double[] xyz = 距離を保つ(0, player, itemStack);
-                x += xyz[0];
-                y += xyz[1];
-                z += xyz[2];
-                flag = xyz[3];
-            }
+            double[] xyz = アンカー巻き取り(player, itemStack);
+            x += xyz[0];
+            y += xyz[1];
+            z += xyz[2];
+            flag = xyz[3];
 
-            if (DataManager.isKeyPress(player, DataManager.keyLeftAnchorRec) || DataManager.PlayerMode(player, DataManager.modeAuto)) {
-                double[] xyz = アンカー巻き取り(1, player, itemStack);
-                x += xyz[0];
-                y += xyz[1];
-                z += xyz[2];
-                flag2 = xyz[3];
-            } else if (DataManager.isKeyPress(player, DataManager.keyLeftAnchorExtend)) {
-                ワイヤー伸ばす(1, player, itemStack, 0.1D);
-                double[] xyz = 距離を保つ(1, player, itemStack);
-                x += xyz[0];
-                y += xyz[1];
-                z += xyz[2];
-                flag2 = xyz[3];
-            } else {
-                double[] xyz = 距離を保つ(1, player, itemStack);
-                x += xyz[0];
-                y += xyz[1];
-                z += xyz[2];
-                flag2 = xyz[3];
-            }
-
-            if(flag == 2||flag2 == 2)
-            {
-                x = 0;
-                y = 0;
-                z = 0;
-            }
-
-            if(flag != 0||flag2 != 0)
-                HookShot.packetPipeline.sendTo(new AnchorPullPacket(x, y, z), (EntityPlayerMP) player);
+            HookShot.packetPipeline.sendTo(new AnchorPullPacket(x, y, z, (int) flag), (EntityPlayerMP) player);
 
             if (DataManager.isKeyPress(player, DataManager.keyAnchorRec)) {
                 アンカー回収(player, itemStack);
@@ -155,60 +109,160 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
 
     public void アンカー解除(EntityPlayer プレイヤー, int サイド) {
         if (サイド == 0) {
-            this.左アンカーマップ.remove(プレイヤー);
+            this.rightAnchorMap.remove(プレイヤー);
         } else if (サイド == 1) {
-            this.右アンカーマップ.remove(プレイヤー);
+            this.leftAnchorMap.remove(プレイヤー);
         }
     }
 
-    public double[] アンカー巻き取り(int サイド, EntityPlayer player, ItemStack is) {
+    public double[] アンカー巻き取り(EntityPlayer player, ItemStack is) {
         double[] xyz = new double[4];
         if (get燃料(is) >= 1) {
-            Entity anchor = null;
+            if (this.rightAnchorMap.containsKey(player)) {
+                EntityAnchor anchor = this.rightAnchorMap.get(player);
+                if (anchor != null && anchor.inObj != 0) {
+                    if ((DataManager.isKeyPress(player, DataManager.keyRightAnchorRec) || DataManager.PlayerMode(player, DataManager.modeAuto))) {
+                        if (!player.isSneaking()) {
+                            if (anchor.getDistanceToEntity(player) > 2) {
+                                set燃料(is, 1, player);
+                                double[] a = xyz = anchorPull(anchor, player, xyz);
+                                xyz[0] = a[0];
+                                xyz[1] = a[1];
+                                xyz[2] = a[2];
+                                xyz[3] = 1;
+                                anchor.dist = player.getDistanceToEntity(anchor);
+                            } else xyz[3] = 1;
+                        } else if (anchor.inObj == 2) {
+                            if (anchor.hitEntity instanceof EntityPlayer) {
+                                if (anchor.hitEntity.getDistanceToEntity(player) > 2) {
+                                    double ea[] = anchorPull(player, anchor.hitEntity, new double[4]);
+                                    HookShot.packetPipeline.sendTo(new AnchorPullPacket(ea[0], ea[1], ea[2], 1), (EntityPlayerMP) anchor.hitEntity);
+                                } else
+                                    HookShot.packetPipeline.sendTo(new AnchorPullPacket(0.0D, 0.0D, 0.0D, 1), (EntityPlayerMP) anchor.hitEntity);
+                            } else {
+                                if (anchor.hitEntity.getDistanceToEntity(player) > 2) {
+                                    double ea[] = anchorPull(player, anchor.hitEntity, new double[4]);
+                                    anchor.hitEntity.motionX += ea[0];
+                                    anchor.hitEntity.motionY += ea[1];
+                                    anchor.hitEntity.motionZ += ea[2];
+                                } else {
 
-            if (サイド == 0) {
-                if (this.左アンカーマップ.containsKey(player)) {
-                    anchor = this.左アンカーマップ.get(player);
+                                    anchor.hitEntity.motionX = 0;
+                                    anchor.hitEntity.motionY = 0;
+                                    anchor.hitEntity.motionZ = 0;
+                                }
+                            }
+                        }
+                    } else if (DataManager.isKeyPress(player, DataManager.keyRightAnchorExtend)) {
+                        ワイヤー伸ばす(0, player, is, 0.2D);
+                    }
                 }
-            } else if (サイド == 1) {
-                if (this.右アンカーマップ.containsKey(player)) {
-                    anchor = this.右アンカーマップ.get(player);
+                if (anchor != null && anchor.inObj != 0 && anchor.getDistance(player.posX + xyz[0], player.posY + xyz[1], player.posZ + xyz[2]) > anchor.dist) {
+                    double xx = player.posX - anchor.posX;
+                    double yy = player.posY - anchor.posY;
+                    double zz = player.posZ - anchor.posZ;
+                    double 角度XZ = Math.atan2(xx, zz);
+                    double 角度Y = Math.atan2(yy, Math.hypot(xx, zz));
+
+                    xyz[0] = -Math.sin(角度XZ) * Math.cos(角度Y);
+                    xyz[2] = -Math.cos(角度XZ) * Math.cos(角度Y);
+                    xyz[1] = -Math.sin(角度Y);
+
+                    xyz[0] *= 0.4D;
+                    xyz[1] *= 0.05D;
+                    xyz[2] *= 0.4D;
+                    xyz[3] = 1;
                 }
             }
 
-            if (anchor != null && ((EntityAnchor) anchor).inObj != 0) {
-                set燃料(is, 1, player);
+            if (this.leftAnchorMap.containsKey(player)) {
+                EntityAnchor anchor = this.leftAnchorMap.get(player);
+                if (anchor != null && anchor.inObj != 0) {
+                    if ((DataManager.isKeyPress(player, DataManager.keyLeftAnchorRec) || DataManager.PlayerMode(player, DataManager.modeAuto))) {
+                        if (!player.isSneaking()) {
+                            if (anchor.getDistanceToEntity(player) > 2) {
+                                set燃料(is, 1, player);
+                                double[] a = xyz = anchorPull(anchor, player, xyz);
+                                xyz[0] = a[0];
+                                xyz[1] = a[1];
+                                xyz[2] = a[2];
+                                xyz[3] = 1;
+                                anchor.dist = player.getDistanceToEntity(anchor);
+                            } else xyz[3] = 1;
+                        } else if (anchor.inObj == 2) {
+                            if (anchor.hitEntity instanceof EntityPlayer) {
+                                if (anchor.hitEntity.getDistanceToEntity(player) > 2) {
+                                    double ea[] = anchorPull(player, anchor.hitEntity, new double[4]);
+                                    HookShot.packetPipeline.sendTo(new AnchorPullPacket(ea[0], ea[1], ea[2], 1), (EntityPlayerMP) anchor.hitEntity);
+                                } else
+                                    HookShot.packetPipeline.sendTo(new AnchorPullPacket(0.0D, 0.0D, 0.0D, 1), (EntityPlayerMP) anchor.hitEntity);
+                            } else {
+                                if (anchor.hitEntity.getDistanceToEntity(player) > 2) {
+                                    double ea[] = anchorPull(player, anchor.hitEntity, new double[4]);
+                                    anchor.hitEntity.motionX += ea[0];
+                                    anchor.hitEntity.motionY += ea[1];
+                                    anchor.hitEntity.motionZ += ea[2];
+                                } else {
 
-                if(anchor.getDistanceToEntity(player) < 2){
-                    xyz[3] = 2;
-                    return xyz;
+                                    anchor.hitEntity.motionX = 0;
+                                    anchor.hitEntity.motionY = 0;
+                                    anchor.hitEntity.motionZ = 0;
+                                }
+                            }
+                        }
+                    } else if (DataManager.isKeyPress(player, DataManager.keyLeftAnchorExtend)) {
+                        ワイヤー伸ばす(1, player, is, 0.2D);
+                    }
                 }
 
-                double xx = player.posX - anchor.posX;
-                double yy = player.posY - anchor.posY;
-                double zz = player.posZ - anchor.posZ;
-                double 角度XZ = Math.atan2(xx, zz);
-                double 角度Y = Math.atan2(yy, Math.hypot(xx, zz));
+                if (anchor != null && anchor.inObj != 0 && anchor.getDistance(player.posX + xyz[0], player.posY + xyz[1], player.posZ + xyz[2]) > anchor.dist) {
+                    double xx = player.posX - anchor.posX;
+                    double yy = player.posY - anchor.posY;
+                    double zz = player.posZ - anchor.posZ;
+                    double 角度XZ = Math.atan2(xx, zz);
+                    double 角度Y = Math.atan2(yy, Math.hypot(xx, zz));
 
-                xyz[0] += -Math.sin(角度XZ) * Math.cos(角度Y);
-                xyz[2] -= Math.cos(角度XZ) * Math.cos(角度Y);
-                xyz[1] -= Math.sin(角度Y)*2;
-                xyz[3] = 1;
+                    xyz[0] = -Math.sin(角度XZ) * Math.cos(角度Y);
+                    xyz[2] = -Math.cos(角度XZ) * Math.cos(角度Y);
+                    xyz[1] = -Math.sin(角度Y);
 
-                player.fallDistance = 0.0F;
-                ((EntityAnchor) anchor).dist = anchor.getDistanceToEntity(player);
+                    xyz[0] *= 0.4D;
+                    xyz[1] *= 0.05D;
+                    xyz[2] *= 0.4D;
+                    xyz[3] = 1;
+                }
             }
         }
+
+        return xyz;
+    }
+
+    private double[] anchorPull(Entity anchor, Entity e, double[] xyz) {
+        if (e == null || anchor == null)
+            return xyz;
+
+        double xx = anchor.posX - e.posX;
+        double yy = anchor.posY - e.posY;
+        double zz = anchor.posZ - e.posZ;
+        double 角度XZ = Math.atan2(xx, zz);
+        double 角度Y = Math.atan2(yy, Math.hypot(xx, zz));
+
+        xyz[0] += Math.sin(角度XZ) * Math.cos(角度Y);
+        xyz[2] += Math.cos(角度XZ) * Math.cos(角度Y);
+        xyz[1] += Math.sin(角度Y);
+
+        e.fallDistance = 0.0F;
+
         return xyz;
     }
 
     public void アンカー回収(EntityPlayer プレイヤー, ItemStack is) {
-        if (this.左アンカーマップ.containsKey(プレイヤー) && !this.左アンカーマップ.get(プレイヤー).isRec()) {
-            this.左アンカーマップ.get(プレイヤー).rec();
+        if (this.rightAnchorMap.containsKey(プレイヤー) && !this.rightAnchorMap.get(プレイヤー).isRec()) {
+            this.rightAnchorMap.get(プレイヤー).rec();
         }
 
-        if (this.右アンカーマップ.containsKey(プレイヤー) && !this.右アンカーマップ.get(プレイヤー).isRec()) {
-            this.右アンカーマップ.get(プレイヤー).rec();
+        if (this.leftAnchorMap.containsKey(プレイヤー) && !this.leftAnchorMap.get(プレイヤー).isRec()) {
+            this.leftAnchorMap.get(プレイヤー).rec();
         }
     }
 
@@ -216,12 +270,12 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
         Entity 引く方 = null;
 
         if (サイド == 0) {
-            if (this.左アンカーマップ.containsKey(プレイヤー)) {
-                引く方 = this.左アンカーマップ.get(プレイヤー);
+            if (this.rightAnchorMap.containsKey(プレイヤー)) {
+                引く方 = this.rightAnchorMap.get(プレイヤー);
             }
         } else if (サイド == 1) {
-            if (this.右アンカーマップ.containsKey(プレイヤー)) {
-                引く方 = this.右アンカーマップ.get(プレイヤー);
+            if (this.leftAnchorMap.containsKey(プレイヤー)) {
+                引く方 = this.leftAnchorMap.get(プレイヤー);
             }
         }
 
@@ -230,82 +284,29 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
         }
     }
 
-    private double[] 距離を保つ(int side, EntityPlayer player, ItemStack is)
-    {
-        Entity anchor = null;
-
-        double[] xyz = new double[4];
-
-        if (side == 0)
-        {
-            if (this.左アンカーマップ.containsKey(player))
-            {
-                anchor = this.左アンカーマップ.get(player);
-            }
-        }
-        else if (side == 1)
-        {
-            if (this.右アンカーマップ.containsKey(player))
-            {
-                anchor = this.右アンカーマップ.get(player);
-            }
-        }
-
-        if (anchor != null && ((EntityAnchor)anchor).inObj != 0)
-        {
-            float f = anchor.getDistanceToEntity(player);
-            player.fallDistance = 0.0F;
-
-            if (((EntityAnchor)anchor).dist == 0.0D)
-            {
-                ((EntityAnchor)anchor).dist = f;
-            }
-
-            if (f > ((EntityAnchor)anchor).dist&&anchor.posY-player.posY > 1)
-            {
-                double xx = player.posX - anchor.posX;
-                double yy = player.posY - anchor.posY-((EntityAnchor)anchor).dist;
-                double zz = player.posZ - anchor.posZ;
-                double 角度XZ = Math.atan2(xx, zz);
-                double 角度Y = Math.atan2(yy, Math.hypot(xx, zz));
-
-                xyz[0] += -Math.sin(角度XZ) * Math.cos(角度Y);
-                xyz[2] -= Math.cos(角度XZ) * Math.cos(角度Y);
-                xyz[1] -= Math.sin(角度Y);
-
-                xyz[0] *= 0.4D;
-                xyz[1] *= 0.4D;
-                xyz[2] *= 0.4D;
-                xyz[3] = 1;
-            }
-        }
-        return xyz;
-    }
-
-
     public void アンカー発射(int サイド, EntityPlayer player, float 速度, ItemStack is) {
         if (get燃料(is) > 4) {
             if (サイド == 0) {
-                if (this.左アンカーマップ.containsKey(player) && !this.左アンカーマップ.get(player).isRec()) {
-                    this.左アンカーマップ.get(player).rec();
+                if (this.rightAnchorMap.containsKey(player) && !this.rightAnchorMap.get(player).isRec()) {
+                    this.rightAnchorMap.get(player).rec();
                     return;
                 }
             } else if (サイド == 1) {
-                if (this.右アンカーマップ.containsKey(player) && !this.右アンカーマップ.get(player).isRec()) {
-                    this.右アンカーマップ.get(player).rec();
+                if (this.leftAnchorMap.containsKey(player) && !this.leftAnchorMap.get(player).isRec()) {
+                    this.leftAnchorMap.get(player).rec();
                     return;
                 }
             }
 
-            if (サイド == 0 && !this.左アンカーマップ.containsKey(player)) {
+            if (サイド == 0 && !this.rightAnchorMap.containsKey(player)) {
                 EntityAnchor anchor = new EntityAnchor(0, player, 速度);
                 set燃料(is, 4, player);
-                左アンカーマップ.put(player, anchor);
+                rightAnchorMap.put(player, anchor);
                 player.worldObj.spawnEntityInWorld(anchor);
-            } else if (サイド == 1 && !this.右アンカーマップ.containsKey(player)) {
+            } else if (サイド == 1 && !this.leftAnchorMap.containsKey(player)) {
                 EntityAnchor anchor = new EntityAnchor(1, player, 速度);
                 set燃料(is, 4, player);
-                右アンカーマップ.put(player, anchor);
+                leftAnchorMap.put(player, anchor);
                 player.worldObj.spawnEntityInWorld(anchor);
             }
         }
@@ -318,7 +319,7 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
     }
 
     public ArmorProperties getProperties(EntityLivingBase player, ItemStack armor, DamageSource source, double damage, int slot) {
-        return アーマープロパティ;
+        return armorProperty;
     }
 
     @Override
