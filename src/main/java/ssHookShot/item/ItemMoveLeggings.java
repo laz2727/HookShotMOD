@@ -95,7 +95,8 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
             z += xyz[2];
             flag = xyz[3];
 
-            HookShot.packetPipeline.sendTo(new AnchorPullPacket(x, y, z, (int) flag), (EntityPlayerMP) player);
+            if(flag != 0)
+                HookShot.packetPipeline.sendTo(new AnchorPullPacket(x, y, z, (int) flag), (EntityPlayerMP) player);
 
             if (DataManager.isKeyPress(player, DataManager.keyAnchorRec)) {
                 アンカー回収(player, itemStack);

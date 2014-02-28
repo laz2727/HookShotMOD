@@ -10,7 +10,7 @@ import java.util.List;
 
 public class KeyPacket extends AbstractPacket
 {
-    private static List<Integer> keyData = new ArrayList<Integer>();
+    private List<Integer> keyData = new ArrayList<Integer>();
 
     public KeyPacket() {}
 

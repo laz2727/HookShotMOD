@@ -2,6 +2,7 @@ package ssHookShot.system;
 
 import net.minecraft.entity.player.EntityPlayer;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.WeakHashMap;
 
@@ -24,8 +25,8 @@ public class DataManager {//ハードコーディング大量の闇
 
     public static int moveLeggingsGUIID = 0;
 
-    private static WeakHashMap<EntityPlayer, List<Integer>> KeyData = new WeakHashMap<EntityPlayer, List<Integer>>();
-    public static WeakHashMap<EntityPlayer, String> PlayerMode = new WeakHashMap<EntityPlayer, String>();
+    private static HashMap<EntityPlayer, List<Integer>> KeyData = new HashMap<EntityPlayer, List<Integer>>();
+    public static HashMap<EntityPlayer, String> PlayerMode = new HashMap<EntityPlayer, String>();
 
     public static void setKeyData(EntityPlayer p, List<Integer> keys)
     {

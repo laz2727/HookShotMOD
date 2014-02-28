@@ -46,42 +46,45 @@ public class KeyHandler {
 
     @SubscribeEvent
     public void key(TickEvent.ClientTickEvent event) {
-        List<Integer> keyData = new ArrayList<Integer>();
-        //闇コード
-        if (keyMode.isPressed()) {
-            keyData.add(DataManager.keyMode);
+
+        if (event.phase.equals(TickEvent.Phase.END)) {
+            List<Integer> keyData = new ArrayList<Integer>();
+            //闇コード
+            if (keyMode.isPressed()) {
+                keyData.add(DataManager.keyMode);
+            }
+            if (Keyboard.isKeyDown(keyRightAnchorShot.getKeyCode())) {
+                keyData.add(DataManager.keyRightAnchorShot);
+            }
+            if (Keyboard.isKeyDown(keyLeftAnchorShot.getKeyCode())) {
+                keyData.add(DataManager.keyLeftAnchorShot);
+            }
+            if (Keyboard.isKeyDown(keyRightAnchorRec.getKeyCode())) {
+                keyData.add(DataManager.keyRightAnchorRec);
+            }
+            if (Keyboard.isKeyDown(keyLeftAnchorRec.getKeyCode())) {
+                keyData.add(DataManager.keyLeftAnchorRec);
+            }
+            if (keyRightAnchorExtend.isPressed()) {
+                keyData.add(DataManager.keyRightAnchorExtend);
+            }
+            if (keyLeftAnchorExtend.isPressed()) {
+                keyData.add(DataManager.keyLeftAnchorExtend);
+            }
+            if (keyAnchorRec.isPressed()) {
+                keyData.add(DataManager.keyAnchorRec);
+            }
+            if (keyOpenGUI.isPressed()) {
+                keyData.add(DataManager.keyOpenGUI);
+            }
+            if (keyReload.isPressed()) {
+                keyData.add(DataManager.keyReload);
+            }
+            if (key.isPressed()) {
+                keyData.add(DataManager.key);
+            }
+            //闇コードここまで
+            HookShot.packetPipeline.sendToServer(new KeyPacket((keyData)));
         }
-        if (Keyboard.isKeyDown(keyRightAnchorShot.getKeyCode())) {
-            keyData.add(DataManager.keyRightAnchorShot);
-        }
-        if (Keyboard.isKeyDown(keyLeftAnchorShot.getKeyCode())) {
-            keyData.add(DataManager.keyLeftAnchorShot);
-        }
-        if (Keyboard.isKeyDown(keyRightAnchorRec.getKeyCode())) {
-            keyData.add(DataManager.keyRightAnchorRec);
-        }
-        if (Keyboard.isKeyDown(keyLeftAnchorRec.getKeyCode())) {
-            keyData.add(DataManager.keyLeftAnchorRec);
-        }
-        if (keyRightAnchorExtend.isPressed()) {
-            keyData.add(DataManager.keyRightAnchorExtend);
-        }
-        if (keyLeftAnchorExtend.isPressed()) {
-            keyData.add(DataManager.keyLeftAnchorExtend);
-        }
-        if (keyAnchorRec.isPressed()) {
-            keyData.add(DataManager.keyAnchorRec);
-        }
-        if (keyOpenGUI.isPressed()) {
-            keyData.add(DataManager.keyOpenGUI);
-        }
-        if (keyReload.isPressed()) {
-            keyData.add(DataManager.keyReload);
-        }
-        if (key.isPressed()) {
-            keyData.add(DataManager.key);
-        }
-        //闇コードここまで
-        HookShot.packetPipeline.sendToServer(new KeyPacket((keyData)));
     }
 }
