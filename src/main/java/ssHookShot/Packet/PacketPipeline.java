@@ -103,6 +103,8 @@ public class PacketPipeline extends MessageToMessageCodec<FMLProxyPacket, Abstra
         this.registerPacket(FuelPacket.class);
         this.registerPacket(DistPacket.class);
         this.registerPacket(EntityPullPacket.class);
+        this.registerPacket(AnchorSPacket.class);
+
         //TODO パケットの追加
     }
 

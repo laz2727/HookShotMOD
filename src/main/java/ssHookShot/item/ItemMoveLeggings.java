@@ -66,15 +66,23 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
             DataManager.setPlayerMode(player, DataManager.modeManual);
         }
 
-        if (DataManager.isKeyPress(player, DataManager.keyRightAnchorShot)) {
-            アンカー発射(0, player, 6.0F, itemStack);
-        }
-
-        if (DataManager.isKeyPress(player, DataManager.keyLeftAnchorShot)) {
-            アンカー発射(1, player, 6.0F, itemStack);
-        }
-
         if (!world.isRemote) {
+            if (DataManager.isKeyPress(player, DataManager.keyAnchorRec)) {
+                アンカー回収(player, itemStack);
+            }
+
+            if (DataManager.isKeyPress(player, DataManager.keyRightAnchorShot)) {
+                アンカー発射(0, player, 6.0F, itemStack);
+            }
+
+            if (DataManager.isKeyPress(player, DataManager.keyLeftAnchorShot)) {
+                アンカー発射(1, player, 6.0F, itemStack);
+            }
+
+            if (DataManager.isKeyPress(player, DataManager.keyOpenGUI)) {
+                player.openGui(HookShot.instance, DataManager.moveLeggingsGUIID, player.worldObj, 0, 0, 0);
+            }
+        } else {
             if (DataManager.isKeyPress(player, DataManager.keyMode)) {
                 if (DataManager.PlayerMode(player, DataManager.modeManual)) {
                     DataManager.setPlayerMode(player, DataManager.modeAuto);
@@ -85,14 +93,6 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                 }
             }
 
-            if (DataManager.isKeyPress(player, DataManager.keyAnchorRec)) {
-                アンカー回収(player, itemStack);
-            }
-
-            if (DataManager.isKeyPress(player, DataManager.keyOpenGUI)) {
-                player.openGui(HookShot.instance, DataManager.moveLeggingsGUIID, player.worldObj, 0, 0, 0);
-            }
-        } else {
             double[] xyz = アンカー巻き取り(player, itemStack);
             MoveHandler.x = xyz[0];
             MoveHandler.y = xyz[1];
@@ -105,8 +105,10 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
     public void アンカー解除(EntityPlayer プレイヤー, int サイド) {
         if (サイド == 0) {
             rightAnchorMap.remove(プレイヤー);
+            HookShot.packetPipeline.sendTo(new AnchorSPacket(-1, 0), (EntityPlayerMP)プレイヤー);
         } else if (サイド == 1) {
             leftAnchorMap.remove(プレイヤー);
+            HookShot.packetPipeline.sendTo(new AnchorSPacket(-1, 1), (EntityPlayerMP)プレイヤー);
         }
     }
 
@@ -250,10 +252,6 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
         }
     }
 
-    private void ワイヤー伸ばす(int サイド, EntityPlayer プレイヤー, ItemStack is, double 長さ) {
-
-    }
-
     public void アンカー発射(int サイド, EntityPlayer player, float 速度, ItemStack is) {
         if (get燃料(is) > 4) {
             if (サイド == 0) {
@@ -270,14 +268,16 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
 
             if (サイド == 0 && !rightAnchorMap.containsKey(player)) {
                 EntityAnchor anchor = new EntityAnchor(0, player, 速度);
-                set燃料(is, 4, player);
                 rightAnchorMap.put(player, anchor);
                 player.worldObj.spawnEntityInWorld(anchor);
+                set燃料(is, 4, player);
+                HookShot.packetPipeline.sendTo(new AnchorSPacket(anchor.getEntityId(), 0), (EntityPlayerMP)player);
             } else if (サイド == 1 && !leftAnchorMap.containsKey(player)) {
                 EntityAnchor anchor = new EntityAnchor(1, player, 速度);
-                set燃料(is, 4, player);
                 leftAnchorMap.put(player, anchor);
                 player.worldObj.spawnEntityInWorld(anchor);
+                set燃料(is, 4, player);
+                HookShot.packetPipeline.sendTo(new AnchorSPacket(anchor.getEntityId(), 1), (EntityPlayerMP)player);
             }
         }
     }
@@ -314,7 +314,6 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                 return ((左.getMaxDamage() + 右.getMaxDamage()) - (左.getItemDamage() + 右.getItemDamage()));
             }
         }
-
         return 0;
     }
 

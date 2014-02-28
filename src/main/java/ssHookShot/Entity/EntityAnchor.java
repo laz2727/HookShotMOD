@@ -221,6 +221,11 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
             }
         }
 
+        if(!this.worldObj.isRemote)
+        {
+            int i;
+        }
+
         if (this.inObj == 1)//ブロックに刺さっているとき
         {
             Block j = this.worldObj.getBlock(this.xTile, this.yTile, this.zTile);
