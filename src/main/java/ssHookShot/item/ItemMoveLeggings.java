@@ -20,13 +20,14 @@ import cpw.mods.fml.relauncher.Side;
 import net.minecraftforge.common.util.Constants;
 import ssHookShot.Entity.EntityAnchor;
 import ssHookShot.HookShot;
-import ssHookShot.Packet.AnchorPullPacket;
+import ssHookShot.Packet.*;
 import ssHookShot.client.ClientProxy;
+import ssHookShot.client.MoveHandler;
 import ssHookShot.system.DataManager;
 
 public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
-    public WeakHashMap<EntityPlayer, EntityAnchor> rightAnchorMap = new WeakHashMap<EntityPlayer, EntityAnchor>();
-    public WeakHashMap<EntityPlayer, EntityAnchor> leftAnchorMap = new WeakHashMap<EntityPlayer, EntityAnchor>();
+    public static WeakHashMap<EntityPlayer, EntityAnchor> rightAnchorMap = new WeakHashMap<EntityPlayer, EntityAnchor>();
+    public static WeakHashMap<EntityPlayer, EntityAnchor> leftAnchorMap = new WeakHashMap<EntityPlayer, EntityAnchor>();
 
     private ArmorProperties armorProperty = new ArmorProperties(0, 0, 0);
 
@@ -65,6 +66,14 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
             DataManager.setPlayerMode(player, DataManager.modeManual);
         }
 
+        if (DataManager.isKeyPress(player, DataManager.keyRightAnchorShot)) {
+            アンカー発射(0, player, 6.0F, itemStack);
+        }
+
+        if (DataManager.isKeyPress(player, DataManager.keyLeftAnchorShot)) {
+            アンカー発射(1, player, 6.0F, itemStack);
+        }
+
         if (!world.isRemote) {
             if (DataManager.isKeyPress(player, DataManager.keyMode)) {
                 if (DataManager.PlayerMode(player, DataManager.modeManual)) {
@@ -76,28 +85,6 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                 }
             }
 
-            double x = 0;
-            double y = 0;
-            double z = 0;
-            double flag = 0;
-
-            if (DataManager.isKeyPress(player, DataManager.keyRightAnchorShot)) {
-                アンカー発射(0, player, 6.0F, itemStack);
-            }
-
-            if (DataManager.isKeyPress(player, DataManager.keyLeftAnchorShot)) {
-                アンカー発射(1, player, 6.0F, itemStack);
-            }
-
-            double[] xyz = アンカー巻き取り(player, itemStack);
-            x += xyz[0];
-            y += xyz[1];
-            z += xyz[2];
-            flag = xyz[3];
-
-            if(flag != 0)
-                HookShot.packetPipeline.sendTo(new AnchorPullPacket(x, y, z, (int) flag), (EntityPlayerMP) player);
-
             if (DataManager.isKeyPress(player, DataManager.keyAnchorRec)) {
                 アンカー回収(player, itemStack);
             }
@@ -105,33 +92,40 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
             if (DataManager.isKeyPress(player, DataManager.keyOpenGUI)) {
                 player.openGui(HookShot.instance, DataManager.moveLeggingsGUIID, player.worldObj, 0, 0, 0);
             }
+        } else {
+            double[] xyz = アンカー巻き取り(player, itemStack);
+            MoveHandler.x = xyz[0];
+            MoveHandler.y = xyz[1];
+            MoveHandler.z = xyz[2];
+            MoveHandler.flag = (int) xyz[3];
+
         }
     }
 
     public void アンカー解除(EntityPlayer プレイヤー, int サイド) {
         if (サイド == 0) {
-            this.rightAnchorMap.remove(プレイヤー);
+            rightAnchorMap.remove(プレイヤー);
         } else if (サイド == 1) {
-            this.leftAnchorMap.remove(プレイヤー);
+            leftAnchorMap.remove(プレイヤー);
         }
     }
 
     public double[] アンカー巻き取り(EntityPlayer player, ItemStack is) {
         double[] xyz = new double[4];
         if (get燃料(is) >= 1) {
-            if (this.rightAnchorMap.containsKey(player)) {
-                EntityAnchor anchor = this.rightAnchorMap.get(player);
+            if (rightAnchorMap.containsKey(player)) {
+                EntityAnchor anchor = rightAnchorMap.get(player);
                 if (anchor != null && anchor.inObj != 0) {
                     if ((DataManager.isKeyPress(player, DataManager.keyRightAnchorRec) || DataManager.PlayerMode(player, DataManager.modeAuto))) {
                         if (!player.isSneaking()) {
                             if (anchor.getDistanceToEntity(player) > 2) {
-                                set燃料(is, 1, player);
+                                HookShot.packetPipeline.sendToServer(new FuelPacket(1));
                                 double[] a = xyz = anchorPull(anchor, player, xyz);
                                 xyz[0] = a[0];
                                 xyz[1] = a[1];
                                 xyz[2] = a[2];
                                 xyz[3] = 1;
-                                anchor.dist = player.getDistanceToEntity(anchor);
+                                HookShot.packetPipeline.sendToServer(new DistPacket(0, 0));
                             } else xyz[3] = 1;
                         } else if (anchor.inObj == 2) {
                             if (anchor.hitEntity instanceof EntityPlayer) {
@@ -143,52 +137,47 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                             } else {
                                 if (anchor.hitEntity.getDistanceToEntity(player) > 2) {
                                     double ea[] = anchorPull(player, anchor.hitEntity, new double[4]);
-                                    anchor.hitEntity.motionX += ea[0];
-                                    anchor.hitEntity.motionY += ea[1];
-                                    anchor.hitEntity.motionZ += ea[2];
+                                    HookShot.packetPipeline.sendToServer(new EntityPullPacket(anchor.hitEntity.getEntityId(), ea[0], ea[1], ea[2]));
                                 } else {
-
-                                    anchor.hitEntity.motionX = 0;
-                                    anchor.hitEntity.motionY = 0;
-                                    anchor.hitEntity.motionZ = 0;
+                                    HookShot.packetPipeline.sendToServer(new EntityPullPacket(anchor.hitEntity.getEntityId(), 0, 0, 0));
                                 }
                             }
+                        } else if (DataManager.isKeyPress(player, DataManager.keyRightAnchorExtend)) {
+                            HookShot.packetPipeline.sendToServer(new DistPacket(0.2D, 0));
                         }
-                    } else if (DataManager.isKeyPress(player, DataManager.keyRightAnchorExtend)) {
-                        ワイヤー伸ばす(0, player, is, 0.2D);
+                    }
+                    if (anchor != null && anchor.inObj != 0 && anchor.getDistance(player.posX + xyz[0], player.posY + xyz[1], player.posZ + xyz[2]) > anchor.dist) {
+                        double xx = player.posX - anchor.posX;
+                        double yy = player.posY - anchor.posY;
+                        double zz = player.posZ - anchor.posZ;
+                        double 角度XZ = Math.atan2(xx, zz);
+                        double 角度Y = Math.atan2(yy, Math.hypot(xx, zz));
+
+                        xyz[0] = -Math.sin(角度XZ) * Math.cos(角度Y);
+                        xyz[2] = -Math.cos(角度XZ) * Math.cos(角度Y);
+                        xyz[1] = -Math.sin(角度Y);
+
+                        xyz[0] *= 0.4D;
+                        xyz[1] *= 0.05D;
+                        xyz[2] *= 0.4D;
+                        xyz[3] = 1;
                     }
                 }
-                if (anchor != null && anchor.inObj != 0 && anchor.getDistance(player.posX + xyz[0], player.posY + xyz[1], player.posZ + xyz[2]) > anchor.dist) {
-                    double xx = player.posX - anchor.posX;
-                    double yy = player.posY - anchor.posY;
-                    double zz = player.posZ - anchor.posZ;
-                    double 角度XZ = Math.atan2(xx, zz);
-                    double 角度Y = Math.atan2(yy, Math.hypot(xx, zz));
 
-                    xyz[0] = -Math.sin(角度XZ) * Math.cos(角度Y);
-                    xyz[2] = -Math.cos(角度XZ) * Math.cos(角度Y);
-                    xyz[1] = -Math.sin(角度Y);
-
-                    xyz[0] *= 0.4D;
-                    xyz[1] *= 0.05D;
-                    xyz[2] *= 0.4D;
-                    xyz[3] = 1;
-                }
             }
-
-            if (this.leftAnchorMap.containsKey(player)) {
-                EntityAnchor anchor = this.leftAnchorMap.get(player);
+            if (leftAnchorMap.containsKey(player)) {
+                EntityAnchor anchor = leftAnchorMap.get(player);
                 if (anchor != null && anchor.inObj != 0) {
                     if ((DataManager.isKeyPress(player, DataManager.keyLeftAnchorRec) || DataManager.PlayerMode(player, DataManager.modeAuto))) {
                         if (!player.isSneaking()) {
                             if (anchor.getDistanceToEntity(player) > 2) {
-                                set燃料(is, 1, player);
+                                HookShot.packetPipeline.sendToServer(new FuelPacket(1));
                                 double[] a = xyz = anchorPull(anchor, player, xyz);
                                 xyz[0] = a[0];
                                 xyz[1] = a[1];
                                 xyz[2] = a[2];
                                 xyz[3] = 1;
-                                anchor.dist = player.getDistanceToEntity(anchor);
+                                HookShot.packetPipeline.sendToServer(new DistPacket(0, 1));
                             } else xyz[3] = 1;
                         } else if (anchor.inObj == 2) {
                             if (anchor.hitEntity instanceof EntityPlayer) {
@@ -200,41 +189,35 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                             } else {
                                 if (anchor.hitEntity.getDistanceToEntity(player) > 2) {
                                     double ea[] = anchorPull(player, anchor.hitEntity, new double[4]);
-                                    anchor.hitEntity.motionX += ea[0];
-                                    anchor.hitEntity.motionY += ea[1];
-                                    anchor.hitEntity.motionZ += ea[2];
+                                    HookShot.packetPipeline.sendToServer(new EntityPullPacket(anchor.hitEntity.getEntityId(), ea[0], ea[1], ea[2]));
                                 } else {
-
-                                    anchor.hitEntity.motionX = 0;
-                                    anchor.hitEntity.motionY = 0;
-                                    anchor.hitEntity.motionZ = 0;
+                                    HookShot.packetPipeline.sendToServer(new EntityPullPacket(anchor.hitEntity.getEntityId(), 0, 0, 0));
                                 }
                             }
+                        } else if (DataManager.isKeyPress(player, DataManager.keyLeftAnchorExtend)) {
+                            HookShot.packetPipeline.sendToServer(new DistPacket(0.2D, 1));
                         }
-                    } else if (DataManager.isKeyPress(player, DataManager.keyLeftAnchorExtend)) {
-                        ワイヤー伸ばす(1, player, is, 0.2D);
                     }
-                }
 
-                if (anchor != null && anchor.inObj != 0 && anchor.getDistance(player.posX + xyz[0], player.posY + xyz[1], player.posZ + xyz[2]) > anchor.dist) {
-                    double xx = player.posX - anchor.posX;
-                    double yy = player.posY - anchor.posY;
-                    double zz = player.posZ - anchor.posZ;
-                    double 角度XZ = Math.atan2(xx, zz);
-                    double 角度Y = Math.atan2(yy, Math.hypot(xx, zz));
+                    if (anchor != null && anchor.inObj != 0 && anchor.getDistance(player.posX + xyz[0], player.posY + xyz[1], player.posZ + xyz[2]) > anchor.dist) {
+                        double xx = player.posX - anchor.posX;
+                        double yy = player.posY - anchor.posY;
+                        double zz = player.posZ - anchor.posZ;
+                        double 角度XZ = Math.atan2(xx, zz);
+                        double 角度Y = Math.atan2(yy, Math.hypot(xx, zz));
 
-                    xyz[0] = -Math.sin(角度XZ) * Math.cos(角度Y);
-                    xyz[2] = -Math.cos(角度XZ) * Math.cos(角度Y);
-                    xyz[1] = -Math.sin(角度Y);
+                        xyz[0] = -Math.sin(角度XZ) * Math.cos(角度Y);
+                        xyz[2] = -Math.cos(角度XZ) * Math.cos(角度Y);
+                        xyz[1] = -Math.sin(角度Y);
 
-                    xyz[0] *= 0.4D;
-                    xyz[1] *= 0.05D;
-                    xyz[2] *= 0.4D;
-                    xyz[3] = 1;
+                        xyz[0] *= 0.4D;
+                        xyz[1] *= 0.05D;
+                        xyz[2] *= 0.4D;
+                        xyz[3] = 1;
+                    }
                 }
             }
         }
-
         return xyz;
     }
 
@@ -258,53 +241,39 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
     }
 
     public void アンカー回収(EntityPlayer プレイヤー, ItemStack is) {
-        if (this.rightAnchorMap.containsKey(プレイヤー) && !this.rightAnchorMap.get(プレイヤー).isRec()) {
-            this.rightAnchorMap.get(プレイヤー).rec();
+        if (rightAnchorMap.containsKey(プレイヤー) && !rightAnchorMap.get(プレイヤー).isRec()) {
+            rightAnchorMap.get(プレイヤー).rec();
         }
 
-        if (this.leftAnchorMap.containsKey(プレイヤー) && !this.leftAnchorMap.get(プレイヤー).isRec()) {
-            this.leftAnchorMap.get(プレイヤー).rec();
+        if (leftAnchorMap.containsKey(プレイヤー) && !leftAnchorMap.get(プレイヤー).isRec()) {
+            leftAnchorMap.get(プレイヤー).rec();
         }
     }
 
     private void ワイヤー伸ばす(int サイド, EntityPlayer プレイヤー, ItemStack is, double 長さ) {
-        Entity 引く方 = null;
 
-        if (サイド == 0) {
-            if (this.rightAnchorMap.containsKey(プレイヤー)) {
-                引く方 = this.rightAnchorMap.get(プレイヤー);
-            }
-        } else if (サイド == 1) {
-            if (this.leftAnchorMap.containsKey(プレイヤー)) {
-                引く方 = this.leftAnchorMap.get(プレイヤー);
-            }
-        }
-
-        if (引く方 != null) {
-            ((EntityAnchor) 引く方).dist += 長さ;
-        }
     }
 
     public void アンカー発射(int サイド, EntityPlayer player, float 速度, ItemStack is) {
         if (get燃料(is) > 4) {
             if (サイド == 0) {
-                if (this.rightAnchorMap.containsKey(player) && !this.rightAnchorMap.get(player).isRec()) {
-                    this.rightAnchorMap.get(player).rec();
+                if (rightAnchorMap.containsKey(player) && !rightAnchorMap.get(player).isRec()) {
+                    rightAnchorMap.get(player).rec();
                     return;
                 }
             } else if (サイド == 1) {
-                if (this.leftAnchorMap.containsKey(player) && !this.leftAnchorMap.get(player).isRec()) {
-                    this.leftAnchorMap.get(player).rec();
+                if (leftAnchorMap.containsKey(player) && !leftAnchorMap.get(player).isRec()) {
+                    leftAnchorMap.get(player).rec();
                     return;
                 }
             }
 
-            if (サイド == 0 && !this.rightAnchorMap.containsKey(player)) {
+            if (サイド == 0 && !rightAnchorMap.containsKey(player)) {
                 EntityAnchor anchor = new EntityAnchor(0, player, 速度);
                 set燃料(is, 4, player);
                 rightAnchorMap.put(player, anchor);
                 player.worldObj.spawnEntityInWorld(anchor);
-            } else if (サイド == 1 && !this.leftAnchorMap.containsKey(player)) {
+            } else if (サイド == 1 && !leftAnchorMap.containsKey(player)) {
                 EntityAnchor anchor = new EntityAnchor(1, player, 速度);
                 set燃料(is, 4, player);
                 leftAnchorMap.put(player, anchor);
@@ -319,7 +288,8 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
         return ClientProxy.moveLegModel;
     }
 
-    public ArmorProperties getProperties(EntityLivingBase player, ItemStack armor, DamageSource source, double damage, int slot) {
+    public ArmorProperties getProperties(EntityLivingBase player, ItemStack armor, DamageSource source,
+                                         double damage, int slot) {
         return armorProperty;
     }
 
@@ -335,10 +305,10 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
     public static int get燃料(ItemStack is) {
         if (is.hasTagCompound() && is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND) != null && is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND) != null) {
             if (is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND).tagCount() > 0 && is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND).tagCount() > 0) {
-                NBTTagCompound nbt = (NBTTagCompound) is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
+                NBTTagCompound nbt = is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
                 int j = nbt.getByte("Slot") & 255;
                 ItemStack 左 = ItemStack.loadItemStackFromNBT(nbt);
-                nbt = (NBTTagCompound) is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
+                nbt = is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
                 j = nbt.getByte("Slot") & 255;
                 ItemStack 右 = ItemStack.loadItemStackFromNBT(nbt);
                 return ((左.getMaxDamage() + 右.getMaxDamage()) - (左.getItemDamage() + 右.getItemDamage()));
@@ -351,10 +321,10 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
     public static int 最大燃料量(ItemStack is) {
         if (is.hasTagCompound() && is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND) != null && is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND) != null) {
             if (is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND).tagCount() > 0 && is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND).tagCount() > 0) {
-                NBTTagCompound nbt = (NBTTagCompound) is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
+                NBTTagCompound nbt = is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
                 int j = nbt.getByte("Slot") & 255;
                 ItemStack 左 = ItemStack.loadItemStackFromNBT(nbt);
-                nbt = (NBTTagCompound) is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
+                nbt = is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
                 j = nbt.getByte("Slot") & 255;
                 ItemStack 右 = ItemStack.loadItemStackFromNBT(nbt);
                 return 左.getMaxDamage() + 右.getMaxDamage();
@@ -390,7 +360,7 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                 NBTTagCompound nbttagcompound1 = (NBTTagCompound) is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
                 int j = nbttagcompound1.getByte("Slot") & 255;
                 ItemStack 左 = ItemStack.loadItemStackFromNBT(nbttagcompound1);
-                nbttagcompound1 = (NBTTagCompound) is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
+                nbttagcompound1 = is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
                 j = nbttagcompound1.getByte("Slot") & 255;
                 ItemStack 右 = ItemStack.loadItemStackFromNBT(nbttagcompound1);
                 左.setItemDamage(左.getItemDamage() + ダメージ);
@@ -430,7 +400,7 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                     NBTTagList nbttaglist = is.getTagCompound().getTagList("litems", Constants.NBT.TAG_COMPOUND);
 
                     for (int i = 0; i < nbttaglist.tagCount(); ++i) {
-                        NBTTagCompound nbt = (NBTTagCompound) nbttaglist.getCompoundTagAt(i);
+                        NBTTagCompound nbt = nbttaglist.getCompoundTagAt(i);
                         int j = nbt.getByte("Slot") & 255;
 
                         if (j >= 0 && j < 6) {

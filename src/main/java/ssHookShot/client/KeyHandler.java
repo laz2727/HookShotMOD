@@ -47,7 +47,7 @@ public class KeyHandler {
     @SubscribeEvent
     public void key(TickEvent.ClientTickEvent event) {
 
-        if (event.phase.equals(TickEvent.Phase.END)) {
+        if (mc.thePlayer != null&&event.phase.equals(TickEvent.Phase.END)) {
             List<Integer> keyData = new ArrayList<Integer>();
             //闇コード
             if (keyMode.isPressed()) {
@@ -84,6 +84,8 @@ public class KeyHandler {
                 keyData.add(DataManager.key);
             }
             //闇コードここまで
+            DataManager.setKeyData(mc.thePlayer, keyData);
+
             HookShot.packetPipeline.sendToServer(new KeyPacket((keyData)));
         }
     }

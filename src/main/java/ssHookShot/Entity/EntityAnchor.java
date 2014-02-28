@@ -243,7 +243,7 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
         else if(this.inObj == 2)//エンティティに刺さってるとき
         {
             this.posX = this.hitEntity.posX;
-            this.posY = this.hitEntity.posY + this.hitEntity.getEyeHeight()*0.8F;
+            this.posY = this.hitEntity.posY;
             this.posZ = this.hitEntity.posZ;
 
             this.setPosition(this.posX,this.posY,this.posZ);
