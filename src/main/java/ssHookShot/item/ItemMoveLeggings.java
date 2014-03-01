@@ -128,6 +128,7 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                                 xyz[2] = a[2];
                                 xyz[3] = 1;
                                 HookShot.packetPipeline.sendToServer(new DistPacket(0, 0));
+                                anchor.dist = anchor.getDistanceToEntity(player);
                             } else xyz[3] = 1;
                         } else if (anchor.inObj == 2) {
                             if (anchor.hitEntity instanceof EntityPlayer) {
@@ -144,24 +145,20 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                                     HookShot.packetPipeline.sendToServer(new EntityPullPacket(anchor.hitEntity.getEntityId(), 0, 0, 0));
                                 }
                             }
-                        } else if (DataManager.isKeyPress(player, DataManager.keyRightAnchorExtend)) {
-                            HookShot.packetPipeline.sendToServer(new DistPacket(0.2D, 0));
                         }
+                    } else if (DataManager.isKeyPress(player, DataManager.keyRightAnchorExtend)) {
+                        HookShot.packetPipeline.sendToServer(new DistPacket(0.2D, 0));
+                        anchor.dist = anchor.getDistanceToEntity(player)+0.2D;
                     }
-                    if (anchor != null && anchor.inObj != 0 && anchor.getDistance(player.posX + xyz[0], player.posY + xyz[1], player.posZ + xyz[2]) > anchor.dist) {
-                        double xx = player.posX - anchor.posX;
-                        double yy = player.posY - anchor.posY;
-                        double zz = player.posZ - anchor.posZ;
+                    if (anchor != null && anchor.inObj != 0 && anchor.getDistance(player.posX, player.posY, player.posZ) > anchor.dist) {
+                        double xx = player.posX + MoveHandler.mx * 20 - anchor.posX;
+                        double yy = player.posY + MoveHandler.my * 20 - anchor.posY;
+                        double zz = player.posZ + MoveHandler.mz * 20 - anchor.posZ;
                         double 角度XZ = Math.atan2(xx, zz);
                         double 角度Y = Math.atan2(yy, Math.hypot(xx, zz));
-
-                        xyz[0] = -Math.sin(角度XZ) * Math.cos(角度Y);
-                        xyz[2] = -Math.cos(角度XZ) * Math.cos(角度Y);
-                        xyz[1] = -Math.sin(角度Y);
-
-                        xyz[0] *= 0.4D;
-                        xyz[1] *= 0.05D;
-                        xyz[2] *= 0.4D;
+                        xyz[0] += -(player.posX - (anchor.posX + Math.sin(角度XZ) * Math.cos(角度Y) * anchor.dist))/10;
+                        xyz[2] += -(player.posZ - (anchor.posZ + Math.cos(角度XZ) * Math.cos(角度Y) * anchor.dist))/10;
+                        xyz[1] += -(player.posY - (anchor.posY + Math.sin(角度Y) * anchor.dist))/10;
                         xyz[3] = 1;
                     }
                 }
@@ -179,6 +176,7 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                                 xyz[1] = a[1];
                                 xyz[2] = a[2];
                                 xyz[3] = 1;
+                                anchor.dist = anchor.getDistanceToEntity(player);
                                 HookShot.packetPipeline.sendToServer(new DistPacket(0, 1));
                             } else xyz[3] = 1;
                         } else if (anchor.inObj == 2) {
@@ -196,25 +194,21 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                                     HookShot.packetPipeline.sendToServer(new EntityPullPacket(anchor.hitEntity.getEntityId(), 0, 0, 0));
                                 }
                             }
-                        } else if (DataManager.isKeyPress(player, DataManager.keyLeftAnchorExtend)) {
-                            HookShot.packetPipeline.sendToServer(new DistPacket(0.2D, 1));
                         }
+                    } else if (DataManager.isKeyPress(player, DataManager.keyLeftAnchorExtend)) {
+                        HookShot.packetPipeline.sendToServer(new DistPacket(0.2D, 1));
+                        anchor.dist = anchor.getDistanceToEntity(player)+0.2D;
                     }
 
-                    if (anchor != null && anchor.inObj != 0 && anchor.getDistance(player.posX + xyz[0], player.posY + xyz[1], player.posZ + xyz[2]) > anchor.dist) {
-                        double xx = player.posX - anchor.posX;
-                        double yy = player.posY - anchor.posY;
-                        double zz = player.posZ - anchor.posZ;
+                    if (anchor != null && anchor.inObj != 0 && anchor.getDistance(player.posX, player.posY, player.posZ) > anchor.dist) {
+                        double xx = player.posX + MoveHandler.mx * 20 - anchor.posX;
+                        double yy = player.posY + MoveHandler.my * 20 - anchor.posY;
+                        double zz = player.posZ + MoveHandler.mz * 20 - anchor.posZ;
                         double 角度XZ = Math.atan2(xx, zz);
                         double 角度Y = Math.atan2(yy, Math.hypot(xx, zz));
-
-                        xyz[0] = -Math.sin(角度XZ) * Math.cos(角度Y);
-                        xyz[2] = -Math.cos(角度XZ) * Math.cos(角度Y);
-                        xyz[1] = -Math.sin(角度Y);
-
-                        xyz[0] *= 0.4D;
-                        xyz[1] *= 0.05D;
-                        xyz[2] *= 0.4D;
+                        xyz[0] += -(player.posX - (anchor.posX + Math.sin(角度XZ) * Math.cos(角度Y) * anchor.dist))/10;
+                        xyz[2] += -(player.posZ - (anchor.posZ + Math.cos(角度XZ) * Math.cos(角度Y) * anchor.dist))/10;
+                        xyz[1] += -(player.posY - (anchor.posY + Math.sin(角度Y) * anchor.dist))/10;
                         xyz[3] = 1;
                     }
                 }

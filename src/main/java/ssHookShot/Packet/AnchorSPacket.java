@@ -37,11 +37,11 @@ public class AnchorSPacket extends AbstractPacket
         if (side == 0) {
             ItemMoveLeggings.rightAnchorMap.remove(player);
             if(eid != -1)
-            ItemMoveLeggings.rightAnchorMap.put(player, (EntityAnchor) player.worldObj.getEntityByID(eid));
+                ItemMoveLeggings.rightAnchorMap.put(player, (EntityAnchor) player.worldObj.getEntityByID(eid));
         } else if (side == 1) {
             ItemMoveLeggings.leftAnchorMap.remove(player);
             if(eid != -1)
-            ItemMoveLeggings.leftAnchorMap.put(player, (EntityAnchor) player.worldObj.getEntityByID(eid));
+                ItemMoveLeggings.leftAnchorMap.put(player, (EntityAnchor) player.worldObj.getEntityByID(eid));
         }
     }
 

@@ -53,8 +53,6 @@ public class HookShot {
     public void preInit(FMLPreInitializationEvent event)
     {
         NetworkRegistry.INSTANCE.registerGuiHandler(this, this.proxy);
-        EntityRegistry.registerModEntity(EntityAnchor.class, "entityAnchor", 0, this, 250, 1, true);
-        EntityRegistry.registerModEntity(EntityKenn.class, "entityHa", 1, this, 250, 1,true);
 
         this.moveLeg = new ItemMoveLeggings(ItemArmor.ArmorMaterial.CHAIN,2).setTextureName("sshookshot:moveleg").setUnlocalizedName("hookshot");
         GameRegistry.registerItem(this.moveLeg, "hookshot");
@@ -136,6 +134,9 @@ public class HookShot {
     @Mod.EventHandler
     public void initialise(FMLInitializationEvent evt) {
         packetPipeline.initialise();
+
+        EntityRegistry.registerModEntity(EntityAnchor.class, "entityAnchor", 0, this, 250, 1, true);
+        EntityRegistry.registerModEntity(EntityKenn.class, "entityHa", 1, this, 250, 1,true);
 
         proxy.register();
 

@@ -53,10 +53,10 @@ public class KeyHandler {
             if (keyMode.isPressed()) {
                 keyData.add(DataManager.keyMode);
             }
-            if (Keyboard.isKeyDown(keyRightAnchorShot.getKeyCode())) {
+            if (keyRightAnchorShot.isPressed()) {
                 keyData.add(DataManager.keyRightAnchorShot);
             }
-            if (Keyboard.isKeyDown(keyLeftAnchorShot.getKeyCode())) {
+            if (keyLeftAnchorShot.isPressed()) {
                 keyData.add(DataManager.keyLeftAnchorShot);
             }
             if (Keyboard.isKeyDown(keyRightAnchorRec.getKeyCode())) {

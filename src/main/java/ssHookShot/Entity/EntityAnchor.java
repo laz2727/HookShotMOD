@@ -399,11 +399,9 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
     }
 
     public void rec(){//回収
-        if(this.ticksInAir > 5||(this.inObj != 0))
-        {
+        if(!worldObj.isRemote)
             this.dataWatcher.updateObject(19,1);
-            inObj = 0;
-        }
+        inObj = 0;
     }
 
     public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound){}
