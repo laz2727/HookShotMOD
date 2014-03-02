@@ -42,12 +42,12 @@ public class EntityKenn extends EntityArrow implements IProjectile,IThrowableEnt
         this.setSize(0.5F, 0.5F);
     }
 
-    public EntityKenn(EntityPlayer par2EntityLiving, float par3,float 差)
+    public EntityKenn(EntityPlayer par2EntityLiving, float par3,float v)
     {
         super(par2EntityLiving.worldObj);
         this.shooter = par2EntityLiving;
-        double xx = Math.cos(((double)par2EntityLiving.rotationYaw) * Math.PI / 180.0D) * 差;
-        double zz = Math.sin(((double)par2EntityLiving.rotationYaw) * Math.PI / 180.0D) * 差;
+        double xx = Math.cos(((double)par2EntityLiving.rotationYaw) * Math.PI / 180.0D) * v;
+        double zz = Math.sin(((double)par2EntityLiving.rotationYaw) * Math.PI / 180.0D) * v;
         this.setLocationAndAngles(par2EntityLiving.posX, par2EntityLiving.posY + (double)par2EntityLiving.getEyeHeight(), par2EntityLiving.posZ, par2EntityLiving.rotationYaw, par2EntityLiving.rotationPitch);
         this.posX -= (double)(MathHelper.cos(this.rotationYaw / 180.0F * (float)Math.PI) * 0.16F)+xx;
         this.posY -= 0.1D;
