@@ -23,12 +23,10 @@ import ssHookShot.Packet.AnchorSPacket;
 import ssHookShot.item.ItemMoveLeggings;
 import ssHookShot.system.DataManager;
 
-import javax.xml.crypto.Data;
-
 public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableEntity
 {
     public boolean firstUpdate = true;
-    private int サイド;//0なら左で1なら右
+    private int side;//0なら左で1なら右
     private int xTile = -1;
     private int yTile = -1;
     private int zTile = -1;
@@ -53,10 +51,10 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
         this(サイド, par2EntityLiving, par3, 0.0F);
     }
 
-    public EntityAnchor(int サイド,EntityPlayer par2EntityLiving, float par3,float yaw)
+    public EntityAnchor(int side,EntityPlayer par2EntityLiving, float par3,float yaw)
     {
         super(par2EntityLiving.worldObj);
-        this.サイド = サイド;
+        this.side = side;
         this.shooter = par2EntityLiving;
         this.setLocationAndAngles(par2EntityLiving.posX, par2EntityLiving.posY + (double)par2EntityLiving.getEyeHeight(), par2EntityLiving.posZ, par2EntityLiving.rotationYaw + yaw, par2EntityLiving.rotationPitch);
         this.posX -= (double)(MathHelper.cos(this.rotationYaw / 180.0F * (float)Math.PI) * 0.16F);
@@ -184,7 +182,7 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
             this.playSound("random.click", 1.0F, 1.2F / (this.rand.nextFloat() * 0.2F + 0.9F));
 
             this.dataWatcher.updateObject(17, this.shooter.getDisplayName());
-            this.dataWatcher.updateObject(18,this.サイド);
+            this.dataWatcher.updateObject(18,this.side);
             firstUpdate = false;//二回目呼ばれないように
         }
 
