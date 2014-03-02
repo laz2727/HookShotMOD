@@ -21,7 +21,7 @@ public class ModelMoveLeggings extends ModelBiped
     ModelRenderer Gus1;
     ModelRenderer Gus2;
 
-    private ResourceLocation 画像 = new ResourceLocation("sshookshot","textures/model/moveleg.png");
+    private ResourceLocation tex = new ResourceLocation("sshookshot","textures/model/moveleg.png");
 
     public ModelMoveLeggings()
     {
@@ -128,7 +128,7 @@ public class ModelMoveLeggings extends ModelBiped
         GL11.glScaled(0.6D,0.6D,0.6D);
         GL11.glTranslatef(0.0F,0.0F,0.1F);
         GL11.glTranslated(0.0D,0.3D,0.0D);
-        mc.renderEngine.bindTexture(画像);
+        mc.renderEngine.bindTexture(tex);
         LParts.render(f5);
         RParts.render(f5);
         Gus.render(f5);
