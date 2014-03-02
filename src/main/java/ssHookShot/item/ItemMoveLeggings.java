@@ -93,7 +93,7 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                 }
             }
 
-            double[] xyz = アンカー巻き取り(player, itemStack);
+            double[] xyz = anchor(player, itemStack);
             MoveHandler.x = xyz[0];
             MoveHandler.y = xyz[1];
             MoveHandler.z = xyz[2];
@@ -101,7 +101,7 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
         }
     }
 
-    public double[] アンカー巻き取り(EntityPlayer player, ItemStack is) {//クライアント側
+    public double[] anchor(EntityPlayer player, ItemStack is) {//クライアント側
         double[] xyz = new double[4];
         if (getFuel(is) >= 1) {
             if (rightAnchorMap.containsKey(player)) {

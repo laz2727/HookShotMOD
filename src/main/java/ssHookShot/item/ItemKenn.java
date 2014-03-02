@@ -226,7 +226,7 @@ public class ItemKenn extends ItemSword implements IItemRenderer {
             else ClientProxy.bladeModel.render2(true);
         }
         if (item.getItemDamage() >= DAMAGE)//折れてれば
-            ClientProxy.bladeModel.描画((Entity) data[1], false);//刃を描画しない
-        else ClientProxy.bladeModel.描画((Entity) data[1], true);
+            ClientProxy.bladeModel.render((Entity) data[1], false);//刃を描画しない
+        else ClientProxy.bladeModel.render((Entity) data[1], true);
     }
 }

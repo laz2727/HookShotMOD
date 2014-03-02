@@ -69,7 +69,7 @@ public class ModelKenn extends ModelBase{
         GL11.glPopMatrix();
     }
 
-    public void 描画(Entity e,boolean hasCrash)
+    public void render(Entity e, boolean hasCrash)
     {
         if(hasCrash&&(mc.gameSettings.thirdPersonView != 0||e != mc.thePlayer))
         {
