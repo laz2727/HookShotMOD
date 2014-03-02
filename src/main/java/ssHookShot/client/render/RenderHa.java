@@ -19,7 +19,7 @@ public class RenderHa extends Render
         GL11.glPushMatrix();
         GL11.glTranslatef((float)par2, (float)par4, (float)par6);
         GL11.glRotatef(e.prevRotationYaw + (e.rotationYaw - e.prevRotationYaw) * par9 - 90.0F, 0.0F, 1.0F, 0.0F);
-        ClientProxy.剣モデル.描画(e.ticksInAir*100);
+        ClientProxy.bladeModel.render(e.ticksInAir * 100);
         GL11.glPopMatrix();
     }
 

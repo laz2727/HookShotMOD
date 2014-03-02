@@ -1,6 +1,5 @@
 package ssHookShot;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -9,15 +8,10 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.common.registry.LanguageRegistry;
-import cpw.mods.fml.relauncher.Side;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.client.IItemRenderer;
-import net.minecraftforge.client.MinecraftForgeClient;
 import ssHookShot.Entity.EntityAnchor;
 import ssHookShot.Entity.EntityKenn;
 import ssHookShot.item.ItemKenn;
@@ -25,22 +19,18 @@ import ssHookShot.item.ItemMoveLeggings;
 import ssHookShot.system.CommonProxy;
 import ssHookShot.Packet.PacketPipeline;
 
-import java.util.ArrayList;
-
 @Mod(modid="ssHookShot", name="立体なんとか装置みたいなの")
 public class HookShot {
     public static final PacketPipeline packetPipeline = new PacketPipeline();
 
     public static boolean e = false;
 
-    public static ArrayList<EntityPlayer> enablePlayers = new ArrayList<EntityPlayer>();
-
-    public Item moveLeg;
-    public Item 燃料;
-    public Item 替え刃;
-    public Item 折れた刃;
-    public Item 折れた刃をまとめたもの;
-    public Item 剣;
+    public Item itemMoveLeg;
+    public Item itemFuel;
+    public Item itemBlade;
+    public Item itemCrashedBlade;
+    public Item itemBladeChank;
+    public Item itemSword;
 
 
     @SidedProxy(clientSide = "ssHookShot.client.ClientProxy", serverSide = "ssHookShot.system.CommonProxy")
@@ -52,13 +42,13 @@ public class HookShot {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
-        NetworkRegistry.INSTANCE.registerGuiHandler(this, this.proxy);
+        NetworkRegistry.INSTANCE.registerGuiHandler(this, proxy);
 
-        this.moveLeg = new ItemMoveLeggings(ItemArmor.ArmorMaterial.CHAIN,2).setTextureName("sshookshot:moveleg").setUnlocalizedName("hookshot");
-        GameRegistry.registerItem(this.moveLeg, "hookshot");
+        this.itemMoveLeg = new ItemMoveLeggings(ItemArmor.ArmorMaterial.CHAIN,2).setTextureName("sshookshot:moveleg").setUnlocalizedName("hookshot");
+        GameRegistry.registerItem(this.itemMoveLeg, "hookshot");
 
         GameRegistry.addRecipe(
-                new ItemStack(moveLeg,1),
+                new ItemStack(itemMoveLeg,1),
                 new Object[]{
                         "A A",
                         "BCB",
@@ -69,11 +59,11 @@ public class HookShot {
                         'B',Item.itemRegistry.getObject("bow"),
                 });
 
-        this.燃料 = new Item().setTextureName("sshookshot:nennryou").setCreativeTab(CreativeTabs.tabCombat).setMaxStackSize(1).setMaxDamage(24000).setUnlocalizedName("nennryou");
-        GameRegistry.registerItem(this.燃料, "nennryou");
+        this.itemFuel = new Item().setTextureName("sshookshot:nennryou").setCreativeTab(CreativeTabs.tabCombat).setMaxStackSize(1).setMaxDamage(24000).setUnlocalizedName("nennryou");
+        GameRegistry.registerItem(this.itemFuel, "nennryou");
 
         GameRegistry.addRecipe(
-                new ItemStack(燃料, 1),
+                new ItemStack(itemFuel, 1),
                 new Object[]{
                         "M",
                         "S",
@@ -81,12 +71,12 @@ public class HookShot {
                         'S',Item.itemRegistry.getObject("fireworks"),
                 });
 
-        this.替え刃 = new Item().setTextureName("sshookshot:kaeba").setCreativeTab(CreativeTabs.tabCombat).setMaxStackSize(1).setUnlocalizedName("kaeba");
-        GameRegistry.registerItem(this.替え刃, "kaeba");
+        this.itemBlade = new Item().setTextureName("sshookshot:kaeba").setCreativeTab(CreativeTabs.tabCombat).setMaxStackSize(1).setUnlocalizedName("kaeba");
+        GameRegistry.registerItem(this.itemBlade, "kaeba");
 
 
         GameRegistry.addRecipe(
-                new ItemStack(替え刃, 8),
+                new ItemStack(itemBlade, 8),
                 new Object[]{
                         " T ",
                         " T ",
@@ -95,33 +85,33 @@ public class HookShot {
                         'S', Item.itemRegistry.getObject("stick")
                 });
 
-        this.折れた刃 = new Item().setTextureName("sshookshot:oretaha").setCreativeTab(CreativeTabs.tabCombat).setUnlocalizedName("oretaha");
-        GameRegistry.registerItem(this.折れた刃, "oretaha");
+        this.itemCrashedBlade = new Item().setTextureName("sshookshot:oretaha").setCreativeTab(CreativeTabs.tabCombat).setUnlocalizedName("oretaha");
+        GameRegistry.registerItem(this.itemCrashedBlade, "oretaha");
 
-        this.折れた刃をまとめたもの = new Item().setTextureName("sshookshot:oretahamatometamono").setCreativeTab(CreativeTabs.tabCombat).setUnlocalizedName("oretahamatometamono");
-        GameRegistry.registerItem(this.折れた刃をまとめたもの, "oretahamatometamono");
+        this.itemBladeChank = new Item().setTextureName("sshookshot:oretahamatometamono").setCreativeTab(CreativeTabs.tabCombat).setUnlocalizedName("oretahamatometamono");
+        GameRegistry.registerItem(this.itemBladeChank, "oretahamatometamono");
 
         GameRegistry.addRecipe(
-                new ItemStack(折れた刃をまとめたもの, 1),
+                new ItemStack(itemBladeChank, 1),
                 new Object[]{
                         "STS",
                         "TTT",
                         "STS",
-                        'T',折れた刃,
+                        'T', itemCrashedBlade,
                         'S',Item.itemRegistry.getObject("stick")
                 });
 
         GameRegistry.addSmelting(
-                折れた刃をまとめたもの,
+                itemBladeChank,
                 new ItemStack((Item) Item.itemRegistry.getObject("iron_ingot"), 1),
                 1
         );
 
-        this.剣 = new ItemKenn().setUnlocalizedName("kenn");;
-        GameRegistry.registerItem(this.剣, "kenn");
+        this.itemSword = new ItemKenn().setUnlocalizedName("kenn");;
+        GameRegistry.registerItem(this.itemSword, "kenn");
 
         GameRegistry.addRecipe(
-                new ItemStack(剣, 1),
+                new ItemStack(itemSword, 1),
                 new Object[]{
                         " S ",
                         "BB ",
@@ -135,7 +125,7 @@ public class HookShot {
     public void initialise(FMLInitializationEvent evt) {
         packetPipeline.initialise();
 
-        EntityRegistry.registerModEntity(EntityAnchor.class, "entityAnchor", 0, this, 250, 1, true);
+        EntityRegistry.registerModEntity(EntityAnchor.class, "entityAnchors", 0, this, 250, 1, true);
         EntityRegistry.registerModEntity(EntityKenn.class, "entityHa", 1, this, 250, 1,true);
 
         proxy.register();

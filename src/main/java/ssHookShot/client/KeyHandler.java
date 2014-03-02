@@ -81,7 +81,7 @@ public class KeyHandler {
                 keyData.add(DataManager.keyReload);
             }
             if (key.isPressed()) {
-                keyData.add(DataManager.key);
+                keyData.add(DataManager.keyThrow);
             }
             //闇コードここまで
             DataManager.setKeyData(mc.thePlayer, keyData);

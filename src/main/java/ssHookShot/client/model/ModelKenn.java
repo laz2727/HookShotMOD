@@ -18,69 +18,68 @@ import org.lwjgl.opengl.GL11;
 
 public class ModelKenn extends ModelBase{
 
-    private ResourceLocation 画像 = new ResourceLocation("sshookshot","textures/model/kenn.png");
-    private ResourceLocation 画像2 = new ResourceLocation("sshookshot","textures/model/kenn2.png");
+    private ResourceLocation tex = new ResourceLocation("sshookshot","textures/model/kenn.png");
+    private ResourceLocation tex2 = new ResourceLocation("sshookshot","textures/model/kenn2.png");
 
     private static Minecraft mc = FMLClientHandler.instance().getClient();
 
-    public ModelRenderer 剣;
-    public ModelRenderer 柄;
+    public ModelRenderer blade;
+    public ModelRenderer rod;
 
     public ModelKenn()
     {
-        剣 = new ModelRenderer(this, 0, 0);
-        剣.addBox(0F, -25F, 0F, 1, 45, 3);
-        剣.setRotationPoint(0F, 0F, 0F);
-        剣.setTextureSize(64, 64);
-        剣.mirror = true;
-        柄 = new ModelRenderer(this, 10, 0);
-        柄.addBox(0F, 19F, -1F, 1, 7, 5);
-        柄.setRotationPoint(0F, 0F, 0F);
-        柄.setTextureSize(64, 64);
-        柄.mirror = true;
+        blade = new ModelRenderer(this, 0, 0);
+        blade.addBox(0F, -25F, 0F, 1, 45, 3);
+        blade.setRotationPoint(0F, 0F, 0F);
+        blade.setTextureSize(64, 64);
+        blade.mirror = true;
+        rod = new ModelRenderer(this, 10, 0);
+        rod.addBox(0F, 19F, -1F, 1, 7, 5);
+        rod.setRotationPoint(0F, 0F, 0F);
+        rod.setTextureSize(64, 64);
+        rod.mirror = true;
     }
 
-    public void 描画(float 角度)
+    public void render(float rot)
     {
         GL11.glPushMatrix();
-        mc.renderEngine.bindTexture(画像);
-        GL11.glRotatef(角度, 0.0F, 0.0F, 1.0F);
-        剣.render(0.035F);
+        mc.renderEngine.bindTexture(tex);
+        GL11.glRotatef(rot, 0.0F, 0.0F, 1.0F);
+        blade.render(0.035F);
         GL11.glPopMatrix();
     }
 
-    public void 描画2(Entity e,boolean 折れてるか)
+    public void render2(boolean hasCrash)
     {
         GL11.glPushMatrix();
-        mc.renderEngine.bindTexture(画像);
+        mc.renderEngine.bindTexture(tex);
         GL11.glRotatef(50.0F, 0.0F, 0.0F, 1.0F);//これくらいでバニラの剣と同じ角度
         GL11.glRotatef(180.0F, 0.0F, 0.0F, 1.0F);
         GL11.glRotatef(90.0F, 0.0F, 1.0F, 0.0F);
         GL11.glTranslatef(0.0F,-0.45F,-0.8F);
-        if(折れてるか)
-            剣.render(0.035F);
+        if(hasCrash)
+            blade.render(0.035F);
         GL11.glPopMatrix();
         GL11.glPushMatrix();
         GL11.glRotatef(50.0F, 0.0F, 0.0F, 1.0F);//これくらいでバニラの剣と同じ角度
         GL11.glRotatef(180.0F, 0.0F, 0.0F, 1.0F);
         GL11.glRotatef(90.0F, 0.0F, 1.0F, 0.0F);
         GL11.glTranslatef(0.0F,-0.7F,-0.8F);
-        柄.render(0.05F);
+        rod.render(0.05F);
         GL11.glPopMatrix();
     }
 
-    public void 描画(Entity e,boolean 折れてるか)
+    public void 描画(Entity e,boolean hasCrash)
     {
-        if(折れてるか&&(mc.gameSettings.thirdPersonView != 0||e != mc.thePlayer))
+        if(hasCrash&&(mc.gameSettings.thirdPersonView != 0||e != mc.thePlayer))
         {
-            剣の描画();
+            renderBlade();
         }
         GL11.glPopMatrix();
         GL11.glPopMatrix();
         GL11.glPopMatrix();
 
         Render render = RenderManager.instance.getEntityRenderObject(e);
-        RenderPlayer renderplayer = (RenderPlayer)render;
         ModelBiped model = null;
 
         Class<RenderPlayer> c = RenderPlayer.class;
@@ -104,12 +103,12 @@ public class ModelKenn extends ModelBase{
 
         model.bipedLeftArm.postRender(0.0625F);
         GL11.glTranslatef(0.08F, -0.25F, -0.08F);
-        GL11.glRotatef(90.0f,0,1,0);
-        GL11.glRotatef(180.0f,1,0,0);
-        GL11.glRotatef(-120.0f,0,0,1);
-        if(折れてるか&&(mc.gameSettings.thirdPersonView != 0||e != mc.thePlayer))
+        GL11.glRotatef(90.0f, 0, 1, 0);
+        GL11.glRotatef(180.0f, 1, 0, 0);
+        GL11.glRotatef(-120.0f, 0, 0, 1);
+        if(hasCrash&&(mc.gameSettings.thirdPersonView != 0||e != mc.thePlayer))
         {
-            剣の描画();
+            renderBlade();
         }
         GL11.glPopMatrix();
 
@@ -120,9 +119,9 @@ public class ModelKenn extends ModelBase{
         model.bipedRightArm.postRender(0.07F);
     }
 
-    private void 剣の描画()
+    private void renderBlade()
     {
-        mc.renderEngine.bindTexture(画像2);
+        mc.renderEngine.bindTexture(tex2);
         Tessellator tessellator = Tessellator.instance;
 
         tessellator.startDrawingQuads();

@@ -29,22 +29,22 @@ import ssHookShot.client.ClientProxy;
 import ssHookShot.system.DataManager;
 
 public class ItemKenn extends ItemSword implements IItemRenderer {
-    private static ToolMaterial 剣 = EnumHelper.addToolMaterial("剣", 1, 0, 20, 0, 14);
+    private static ToolMaterial bladeMaterial = EnumHelper.addToolMaterial("itemSword", 1, 0, 20, 0, 14);
 
     @SideOnly(Side.CLIENT)
     private IIcon[] iconArray;
 
-    private final int 耐久値 = 20;
+    private final int DAMAGE = 20;
 
     protected Random rand = new Random();
 
-    public WeakHashMap<EntityPlayer, PlayerXYZ> lastmotion = new WeakHashMap<EntityPlayer, PlayerXYZ>();
-    public WeakHashMap<EntityPlayer, Integer> 準備時間 = new WeakHashMap<EntityPlayer, Integer>();
+    public WeakHashMap<EntityPlayer, PlayerXYZ> lastMotion = new WeakHashMap<EntityPlayer, PlayerXYZ>();
+    public WeakHashMap<EntityPlayer, Integer> waitTime = new WeakHashMap<EntityPlayer, Integer>();
 
     public ItemKenn() {
-        super(剣);
+        super(bladeMaterial);
         this.setMaxStackSize(1);
-        this.setMaxDamage(耐久値);
+        this.setMaxDamage(DAMAGE);
         this.setCreativeTab(CreativeTabs.tabCombat);//武器タブ
     }
 
@@ -57,7 +57,7 @@ public class ItemKenn extends ItemSword implements IItemRenderer {
     }
 
     public ItemStack onItemRightClick(ItemStack par1ItemStack, World par2World, EntityPlayer par3EntityPlayer) {
-        if (準備時間.containsKey(par3EntityPlayer) && 準備時間.get(par3EntityPlayer) == 0) {//準備完了時(準備期間が0の時)のみ剣を構えられる
+        if (waitTime.containsKey(par3EntityPlayer) && waitTime.get(par3EntityPlayer) == 0) {//準備完了時(準備期間が0の時)のみ剣を構えられる
             par3EntityPlayer.setItemInUse(par1ItemStack, this.getMaxItemUseDuration(par1ItemStack));
         }
         return par1ItemStack;
@@ -68,10 +68,10 @@ public class ItemKenn extends ItemSword implements IItemRenderer {
             if (par3Entity instanceof EntityPlayerMP) {
                 EntityPlayerMP p = (EntityPlayerMP) par3Entity;
 
-                if (!準備時間.containsKey(p))//登録されてなければ
-                    準備時間.put(p, 0);//登録
-                if (準備時間.get(p) > 0)//準備期間が0以上なら
-                    準備時間.put(p, 準備時間.get(p) - 1);//1へらす
+                if (!waitTime.containsKey(p))//登録されてなければ
+                    waitTime.put(p, 0);//登録
+                if (waitTime.get(p) > 0)//準備期間が0以上なら
+                    waitTime.put(p, waitTime.get(p) - 1);//1へらす
 
                 if (par5 && p.isUsingItem()) {
                     List<Entity> list = p.worldObj.getEntitiesWithinAABB(Entity.class, p.boundingBox.expand(1, 1, 1));
@@ -81,29 +81,29 @@ public class ItemKenn extends ItemSword implements IItemRenderer {
                         Entity e = it.next();
                         if (!(e instanceof EntityXPOrb) && !(e instanceof EntityItem) && e != p)//もっる人と経験値とアイテムには攻撃しない
                         {
-                            攻撃(par1ItemStack, p, e, false);
+                            attack(par1ItemStack, p, e, false);
                         }
                     }
                 }
 
-                lastmotion.put(p, new PlayerXYZ(p.posX, p.posY, p.posZ));//前tickの座標をほぞん(攻撃力の判定で使う)
+                lastMotion.put(p, new PlayerXYZ(p.posX, p.posY, p.posZ));//前tickの座標をほぞん(攻撃力の判定で使う)
 
-                if (DataManager.isKeyPress(p, DataManager.key)&&par1ItemStack.getItemDamage()<this.耐久値) {
+                if (DataManager.isKeyPress(p, DataManager.keyThrow)&&par1ItemStack.getItemDamage()<this.DAMAGE) {
                     EntityKenn kenn = new EntityKenn(p, 3.0F, 0);
                     p.worldObj.spawnEntityInWorld(kenn);
                     kenn = new EntityKenn(p, 3.0F, -1);
                     p.worldObj.spawnEntityInWorld(kenn);
-                    par1ItemStack.setItemDamage(耐久値 + 1);//剣破壊
+                    par1ItemStack.setItemDamage(DAMAGE + 1);//剣破壊
                     return;
                 } else if (DataManager.isKeyPress(p, DataManager.keyReload) && par1ItemStack.getItemDamage() > 0)//左クリックが押されていて剣が傷ついてたら
                 {
                     if (p.getCurrentArmor(1) != null) {
-                        if (ItemMoveLeggings.刃があるか(p.getCurrentArmor(1)))//インベントリに替え刃があれば
+                        if (ItemMoveLeggings.hasBlade(p.getCurrentArmor(1)))//インベントリに替え刃があれば
                         {
                             p.swingItem();//腕を振る
-                            ItemMoveLeggings.左刃を一枚使う(p.getCurrentArmor(1));
-                            ItemMoveLeggings.右刃を一枚使う(p.getCurrentArmor(1));
-                            if (par1ItemStack.getItemDamage() <= 耐久値) {
+                            ItemMoveLeggings.useLeftBlade(p.getCurrentArmor(1));
+                            ItemMoveLeggings.useRightBlade(p.getCurrentArmor(1));
+                            if (par1ItemStack.getItemDamage() <= DAMAGE) {
                                 EntityKenn kenn = new EntityKenn(p, 0.0F, 0);
                                 p.worldObj.spawnEntityInWorld(kenn);
                                 kenn = new EntityKenn(p, 0.0F, -1);
@@ -117,9 +117,9 @@ public class ItemKenn extends ItemSword implements IItemRenderer {
                     boolean flag = false;
 
                     for (int j = 0; j < p.inventory.mainInventory.length; ++j) {
-                        if (p.inventory.mainInventory[j] != null && p.inventory.mainInventory[j].getItem() == HookShot.instance.替え刃) {
+                        if (p.inventory.mainInventory[j] != null && p.inventory.mainInventory[j].getItem() == HookShot.instance.itemBlade) {
                             for (int j1 = j + 1; j1 < p.inventory.mainInventory.length; ++j1) {
-                                if (p.inventory.mainInventory[j1] != null && p.inventory.mainInventory[j1].getItem() == HookShot.instance.替え刃) {
+                                if (p.inventory.mainInventory[j1] != null && p.inventory.mainInventory[j1].getItem() == HookShot.instance.itemBlade) {
                                     flag = true;
                                 }
                             }
@@ -129,9 +129,9 @@ public class ItemKenn extends ItemSword implements IItemRenderer {
                     if (flag)//インベントリに替え刃があれば
                     {
                         p.swingItem();//腕を振る
-                        p.inventory.consumeInventoryItem(HookShot.instance.替え刃);//替え刃を消費する
-                        p.inventory.consumeInventoryItem(HookShot.instance.替え刃);//替え刃を消費する
-                        if (par1ItemStack.getItemDamage() <= 耐久値) {
+                        p.inventory.consumeInventoryItem(HookShot.instance.itemBlade);//替え刃を消費する
+                        p.inventory.consumeInventoryItem(HookShot.instance.itemBlade);//替え刃を消費する
+                        if (par1ItemStack.getItemDamage() <= DAMAGE) {
                             EntityKenn kenn = new EntityKenn(p, 0.0F, 0);
                             p.worldObj.spawnEntityInWorld(kenn);
                             kenn = new EntityKenn(p, 0.0F, -1);
@@ -149,18 +149,18 @@ public class ItemKenn extends ItemSword implements IItemRenderer {
     }
 
 
-    public void 攻撃(ItemStack stack, EntityPlayer player, Entity entity, boolean a) {
-        if (stack.getItemDamage() < 耐久値 && !player.worldObj.isRemote) {
+    public void attack(ItemStack stack, EntityPlayer player, Entity entity, boolean a) {
+        if (stack.getItemDamage() < DAMAGE && !player.worldObj.isRemote) {
             double m = 0;
-            m += Math.abs(lastmotion.get(player).x - player.posX);
-            m += Math.abs(lastmotion.get(player).y - player.posY) * 2;//落下の係数は大きく
-            m += Math.abs(lastmotion.get(player).z - player.posZ);
+            m += Math.abs(lastMotion.get(player).x - player.posX);
+            m += Math.abs(lastMotion.get(player).y - player.posY) * 2;//落下の係数は大きく
+            m += Math.abs(lastMotion.get(player).z - player.posZ);
             m *= 10;
             if (m > 0) {
                 stack.damageItem((int) m, player);
                 entity.attackEntityFrom(DamageSource.causePlayerDamage(player), (int) (m * 2));
                 player.stopUsingItem();
-                準備時間.put(player, 20);
+                waitTime.put(player, 20);
             } else if (a) {
                 stack.damageItem(2, player);//攻撃ではなかったら2ダメージを剣が受ける
             }
@@ -183,7 +183,7 @@ public class ItemKenn extends ItemSword implements IItemRenderer {
     @SideOnly(Side.CLIENT)
     public IIcon getIconFromDamage(int par1)//アイコンをダメージ値によって変更
     {
-        if (par1 >= 耐久値)//完全に折れていれば
+        if (par1 >= DAMAGE)//完全に折れていれば
         {
             return this.iconArray[0];//折れているアイコンを使う
         }
@@ -221,12 +221,12 @@ public class ItemKenn extends ItemSword implements IItemRenderer {
     @Override
     public void renderItem(ItemRenderType type, ItemStack item, Object... data) {
         if (type == ItemRenderType.EQUIPPED_FIRST_PERSON) {
-            if (item.getItemDamage() >= 耐久値)//折れてれば
-                ClientProxy.剣モデル.描画2((Entity) data[1], false);//刃を描画しない
-            else ClientProxy.剣モデル.描画2((Entity) data[1], true);
+            if (item.getItemDamage() >= DAMAGE)//折れてれば
+                ClientProxy.bladeModel.render2(false);//刃を描画しない
+            else ClientProxy.bladeModel.render2(true);
         }
-        if (item.getItemDamage() >= 耐久値)//折れてれば
-            ClientProxy.剣モデル.描画((Entity) data[1], false);//刃を描画しない
-        else ClientProxy.剣モデル.描画((Entity) data[1], true);
+        if (item.getItemDamage() >= DAMAGE)//折れてれば
+            ClientProxy.bladeModel.描画((Entity) data[1], false);//刃を描画しない
+        else ClientProxy.bladeModel.描画((Entity) data[1], true);
     }
 }

@@ -10,19 +10,19 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants;
 import ssHookShot.HookShot;
 
-public class ContainerSouti extends Container{
+public class ContainerMoveLeg extends Container{
 
-	private IInventory 左 = new InventorySouti();
-	private IInventory 右 = new InventorySouti();
-	private IInventory 左ボンベ = new InventoryGus();
-	private IInventory 右ボンベ = new InventoryGus();
+	private IInventory leftInv = new InventorySouti();
+	private IInventory rightInv = new InventorySouti();
+	private IInventory leftGus = new InventoryGus();
+	private IInventory rightGus = new InventoryGus();
 
-	private final int 燃料と替え刃SIZE = 左.getSizeInventory() + 右.getSizeInventory() + 左ボンベ.getSizeInventory() + 右ボンベ.getSizeInventory();
+	private final int invSlotSize = leftInv.getSizeInventory() + rightInv.getSizeInventory() + leftGus.getSizeInventory() + rightGus.getSizeInventory();
 
-	private EntityPlayer player;                            // プレイヤー(今回はほとんど使わないが, チャット欄にメッセージを出したいときなどに使う
+	private EntityPlayer player;
 	private IInventory playerInventory;
 
-	public ContainerSouti(EntityPlayer player)
+	public ContainerMoveLeg(EntityPlayer player)
 	{
 		this.player          = player;
 		this.playerInventory = player.inventory;
@@ -31,66 +31,66 @@ public class ContainerSouti extends Container{
 		for (int i = 0; i < 1; ++i)
 		{
 			if(nbttaglist.tagCount()>0){
-				NBTTagCompound nbt = (NBTTagCompound)nbttaglist.getCompoundTagAt(i);
+				NBTTagCompound nbt = nbttaglist.getCompoundTagAt(i);
 				int j = nbt.getByte("Slot") & 255;
 
-				if (j >= 0 && j < 左ボンベ.getSizeInventory())
+				if (j >= 0 && j < leftGus.getSizeInventory())
 				{
-					左ボンベ.setInventorySlotContents(i,ItemStack.loadItemStackFromNBT(nbt));
+					leftGus.setInventorySlotContents(i,ItemStack.loadItemStackFromNBT(nbt));
 				}
 			}
 		}
 
-		addSlotToContainer(new SlotSoutiGus(左ボンベ,0, 8, 10));
+		addSlotToContainer(new SlotSoutiGus(leftGus,0, 8, 10));
 
 		nbttaglist = player.getCurrentArmor(1).getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND);
 		for (int i = 0; i < 1; ++i)
 		{
 			if(nbttaglist.tagCount()>0){
-				NBTTagCompound nbt = (NBTTagCompound)nbttaglist.getCompoundTagAt(i);
+				NBTTagCompound nbt = nbttaglist.getCompoundTagAt(i);
 				int j = nbt.getByte("Slot") & 255;
 
-				if (j >= 0 && j < 右ボンベ.getSizeInventory())
+				if (j >= 0 && j < rightGus.getSizeInventory())
 				{
-					右ボンベ.setInventorySlotContents(i,ItemStack.loadItemStackFromNBT(nbt));
+					rightGus.setInventorySlotContents(i,ItemStack.loadItemStackFromNBT(nbt));
 				}
 			}
 		}
 
-		addSlotToContainer(new SlotSoutiGus(右ボンベ, 0, 8, 44));
+		addSlotToContainer(new SlotSoutiGus(rightGus, 0, 8, 44));
 
 		nbttaglist = player.getCurrentArmor(1).getTagCompound().getTagList("litems", Constants.NBT.TAG_COMPOUND);
 		for (int i = 0; i < nbttaglist.tagCount(); ++i)
 		{
-			NBTTagCompound nbt = (NBTTagCompound)nbttaglist.getCompoundTagAt(i);
+			NBTTagCompound nbt = nbttaglist.getCompoundTagAt(i);
 			int j = nbt.getByte("Slot") & 255;
 
-			if (j >= 0 && j < 左.getSizeInventory())
+			if (j >= 0 && j < leftInv.getSizeInventory())
 			{
-				左.setInventorySlotContents(i,ItemStack.loadItemStackFromNBT(nbt));
+				leftInv.setInventorySlotContents(i,ItemStack.loadItemStackFromNBT(nbt));
 			}
 		}
 
 		for (int slotIndex = 0; slotIndex < 6; ++slotIndex)
 		{
-			addSlotToContainer(new SlotSoutiKaeba(左, slotIndex, 44 + slotIndex * 18, 10));
+			addSlotToContainer(new SlotMoveLegBlade(leftInv, slotIndex, 44 + slotIndex * 18, 10));
 		}
 
 		nbttaglist = player.getCurrentArmor(1).getTagCompound().getTagList("ritems", Constants.NBT.TAG_COMPOUND);
 		for (int i = 0; i < nbttaglist.tagCount(); ++i)
 		{
-			NBTTagCompound nbt = (NBTTagCompound)nbttaglist.getCompoundTagAt(i);
+			NBTTagCompound nbt = nbttaglist.getCompoundTagAt(i);
 			int j = nbt.getByte("Slot") & 255;
 
-			if (j >= 0 && j < 右.getSizeInventory())
+			if (j >= 0 && j < rightInv.getSizeInventory())
 			{
-				右.setInventorySlotContents(i,ItemStack.loadItemStackFromNBT(nbt));
+				rightInv.setInventorySlotContents(i,ItemStack.loadItemStackFromNBT(nbt));
 			}
 		}
 
 		for (int slotIndex = 0; slotIndex < 6; ++slotIndex)
 		{
-			addSlotToContainer(new SlotSoutiKaeba(右, slotIndex, 44 + slotIndex * 18, 44));
+			addSlotToContainer(new SlotMoveLegBlade(rightInv, slotIndex, 44 + slotIndex * 18, 44));
 		}
 
 		for (int rows = 0; rows < 3; ++rows)
@@ -117,13 +117,13 @@ public class ContainerSouti extends Container{
 
 			NBTTagList nbttaglist = new NBTTagList();
 
-			for (int i = 0; i < this.左.getSizeInventory(); ++i)
+			for (int i = 0; i < this.leftInv.getSizeInventory(); ++i)
 			{
-				if (this.左.getStackInSlot(i) != null)
+				if (this.leftInv.getStackInSlot(i) != null)
 				{
 					NBTTagCompound nbt = new NBTTagCompound();
 					nbt.setByte("Slot", (byte) i);
-					this.左.getStackInSlot(i).writeToNBT(nbt);
+					this.leftInv.getStackInSlot(i).writeToNBT(nbt);
 					nbttaglist.appendTag(nbt);
 				}
 			}
@@ -132,13 +132,13 @@ public class ContainerSouti extends Container{
 
 			nbttaglist = new NBTTagList();
 
-			for (int i = 0; i < this.右.getSizeInventory(); ++i)
+			for (int i = 0; i < this.rightInv.getSizeInventory(); ++i)
 			{
-				if (this.右.getStackInSlot(i) != null)
+				if (this.rightInv.getStackInSlot(i) != null)
 				{
 					NBTTagCompound nbttagcompound1 = new NBTTagCompound();
 					nbttagcompound1.setByte("Slot", (byte)i);
-					this.右.getStackInSlot(i).writeToNBT(nbttagcompound1);
+					this.rightInv.getStackInSlot(i).writeToNBT(nbttagcompound1);
 					nbttaglist.appendTag(nbttagcompound1);
 				}
 			}
@@ -147,13 +147,13 @@ public class ContainerSouti extends Container{
 
 			nbttaglist = new NBTTagList();
 			
-			for (int i = 0; i < this.左ボンベ.getSizeInventory(); ++i)
+			for (int i = 0; i < this.leftGus.getSizeInventory(); ++i)
 			{
-				if (this.左ボンベ.getStackInSlot(i) != null)
+				if (this.leftGus.getStackInSlot(i) != null)
 				{
 					NBTTagCompound nbttagcompound1 = new NBTTagCompound();
 					nbttagcompound1.setByte("Slot", (byte)i);
-					this.左ボンベ.getStackInSlot(i).writeToNBT(nbttagcompound1);
+					this.leftGus.getStackInSlot(i).writeToNBT(nbttagcompound1);
 					nbttaglist.appendTag(nbttagcompound1);
 				}
 			}
@@ -162,13 +162,13 @@ public class ContainerSouti extends Container{
 
 			nbttaglist = new NBTTagList();
 
-			for (int i = 0; i < this.右ボンベ.getSizeInventory(); ++i)
+			for (int i = 0; i < this.rightGus.getSizeInventory(); ++i)
 			{
-				if (this.右ボンベ.getStackInSlot(i) != null)
+				if (this.rightGus.getStackInSlot(i) != null)
 				{
 					NBTTagCompound nbttagcompound1 = new NBTTagCompound();
 					nbttagcompound1.setByte("Slot", (byte)i);
-					this.右ボンベ.getStackInSlot(i).writeToNBT(nbttagcompound1);
+					this.rightGus.getStackInSlot(i).writeToNBT(nbttagcompound1);
 					nbttaglist.appendTag(nbttagcompound1);
 				}
 			}
@@ -193,42 +193,42 @@ public class ContainerSouti extends Container{
 			ItemStack stack = slot.getStack();
 			itemstack = stack.copy();
 
-			if (slotIndex >= 燃料と替え刃SIZE && slotIndex < 燃料と替え刃SIZE + 36) {
-				if (stack.getItem() == HookShot.instance.燃料) {
+			if (slotIndex >= invSlotSize && slotIndex < invSlotSize + 36) {
+				if (stack.getItem() == HookShot.instance.itemFuel) {
 					if (!this.mergeItemStack(stack, 0, 2, false))
 					{
 						return null;
 					}
 				}
-				else if (stack.getItem() == HookShot.instance.替え刃) {
-					if (!this.mergeItemStack(stack, 2, 燃料と替え刃SIZE, false))
+				else if (stack.getItem() == HookShot.instance.itemBlade) {
+					if (!this.mergeItemStack(stack, 2, invSlotSize, false))
 					{
 						return null;
 					}
 				}
-				else if (slotIndex >= 燃料と替え刃SIZE && slotIndex < 燃料と替え刃SIZE + 27)
+				else if (slotIndex >= invSlotSize && slotIndex < invSlotSize + 27)
 				{
-					if (!this.mergeItemStack(stack, 燃料と替え刃SIZE + 27, 燃料と替え刃SIZE + 36, false))
+					if (!this.mergeItemStack(stack, invSlotSize + 27, invSlotSize + 36, false))
 					{
 						return null;
 					}
 				}
-				else if (slotIndex >= 燃料と替え刃SIZE + 27 && slotIndex < 燃料と替え刃SIZE + 36)
+				else if (slotIndex >= invSlotSize + 27 && slotIndex < invSlotSize + 36)
 				{
-					if (!this.mergeItemStack(stack, 燃料と替え刃SIZE, 燃料と替え刃SIZE + 27, false))
+					if (!this.mergeItemStack(stack, invSlotSize, invSlotSize + 27, false))
 					{
 						return null;
 					}
 				}
 			}
-			else if (!this.mergeItemStack(stack, 燃料と替え刃SIZE + 27, 燃料と替え刃SIZE + 36, false))
+			else if (!this.mergeItemStack(stack, invSlotSize + 27, invSlotSize + 36, false))
 			{
 				return null;
 			}
 
 			if (stack.stackSize == 0)
 			{
-				slot.putStack((ItemStack)null);
+				slot.putStack(null);
 			}
 			else
 			{

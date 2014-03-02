@@ -35,7 +35,7 @@ public class FuelPacket extends AbstractPacket
 
         if(player.getCurrentArmor(2) != null&&player.getCurrentArmor(2).getItem() instanceof ItemMoveLeggings)
         {
-            ItemMoveLeggings.set燃料(player.getCurrentArmor(2),fuel,player);
+            ItemMoveLeggings.setFuel(player.getCurrentArmor(2), fuel, player);
         }
     }
 }

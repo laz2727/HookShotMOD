@@ -7,21 +7,24 @@ import java.util.List;
 import java.util.WeakHashMap;
 
 public class DataManager {//ハードコーディング大量の闇
-    public static String modeNone = "none";
-    public static String modeAuto = "auto";
-    public static String modeManual = "manual";
+    public static final String modeNone = "none";
+    public static final String modeAuto = "auto";
+    public static final String modeManual = "manual";
 
-    public static int keyMode = 1;
-    public static int keyRightAnchorShot = 2;
-    public static int keyLeftAnchorShot = 3;
-    public static int keyRightAnchorRec = 4;
-    public static int keyLeftAnchorRec = 5;
-    public static int keyRightAnchorExtend = 6;
-    public static int keyLeftAnchorExtend = 7;
-    public static int keyAnchorRec = 8;
-    public static int keyOpenGUI = 9;
-    public static int keyReload = 10;
-    public static int key = 11;
+    public static final int right = 0;
+    public static final int left = 1;
+
+    public static final int keyMode = 1;
+    public static final int keyRightAnchorShot = 2;
+    public static final int keyLeftAnchorShot = 3;
+    public static final int keyRightAnchorRec = 4;
+    public static final int keyLeftAnchorRec = 5;
+    public static final int keyRightAnchorExtend = 6;
+    public static final int keyLeftAnchorExtend = 7;
+    public static final int keyAnchorRec = 8;
+    public static final int keyOpenGUI = 9;
+    public static final int keyReload = 10;
+    public static final int keyThrow = 11;
 
     public static int moveLeggingsGUIID = 0;
 
@@ -33,7 +36,6 @@ public class DataManager {//ハードコーディング大量の闇
         if(p == null)
             return;
 
-        KeyData.remove(p);
         KeyData.put(p, keys);
     }
 
@@ -54,7 +56,6 @@ public class DataManager {//ハードコーディング大量の闇
         if(p == null)
             return;
 
-        PlayerMode.remove(p);
         PlayerMode.put(p, key);
     }
 

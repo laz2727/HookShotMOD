@@ -66,23 +66,23 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
             DataManager.setPlayerMode(player, DataManager.modeManual);
         }
 
-        if (!world.isRemote) {
+        if (!world.isRemote) {//サーバー側
             if (DataManager.isKeyPress(player, DataManager.keyAnchorRec)) {
-                アンカー回収(player, itemStack);
+                anchorRec(player);
             }
 
             if (DataManager.isKeyPress(player, DataManager.keyRightAnchorShot)) {
-                アンカー発射(0, player, 6.0F, itemStack);
+                shotAnchor(DataManager.right, player, 6.0F, itemStack);
             }
 
             if (DataManager.isKeyPress(player, DataManager.keyLeftAnchorShot)) {
-                アンカー発射(1, player, 6.0F, itemStack);
+                shotAnchor(DataManager.left, player, 6.0F, itemStack);
             }
 
             if (DataManager.isKeyPress(player, DataManager.keyOpenGUI)) {
                 player.openGui(HookShot.instance, DataManager.moveLeggingsGUIID, player.worldObj, 0, 0, 0);
             }
-        } else {
+        } else {//クライアント側
             if (DataManager.isKeyPress(player, DataManager.keyMode)) {
                 if (DataManager.PlayerMode(player, DataManager.modeManual)) {
                     DataManager.setPlayerMode(player, DataManager.modeAuto);
@@ -98,23 +98,12 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
             MoveHandler.y = xyz[1];
             MoveHandler.z = xyz[2];
             MoveHandler.flag = (int) xyz[3];
-
         }
     }
 
-    public void アンカー解除(EntityPlayer プレイヤー, int サイド) {
-        if (サイド == 0) {
-            rightAnchorMap.remove(プレイヤー);
-            HookShot.packetPipeline.sendTo(new AnchorSPacket(-1, 0), (EntityPlayerMP)プレイヤー);
-        } else if (サイド == 1) {
-            leftAnchorMap.remove(プレイヤー);
-            HookShot.packetPipeline.sendTo(new AnchorSPacket(-1, 1), (EntityPlayerMP)プレイヤー);
-        }
-    }
-
-    public double[] アンカー巻き取り(EntityPlayer player, ItemStack is) {
+    public double[] アンカー巻き取り(EntityPlayer player, ItemStack is) {//クライアント側
         double[] xyz = new double[4];
-        if (get燃料(is) >= 1) {
+        if (getFuel(is) >= 1) {
             if (rightAnchorMap.containsKey(player)) {
                 EntityAnchor anchor = rightAnchorMap.get(player);
                 if (anchor != null && anchor.inObj != 0) {
@@ -149,17 +138,6 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                     } else if (DataManager.isKeyPress(player, DataManager.keyRightAnchorExtend)) {
                         HookShot.packetPipeline.sendToServer(new DistPacket(0.2D, 0));
                         anchor.dist = anchor.getDistanceToEntity(player)+0.2D;
-                    }
-                    if (anchor != null && anchor.inObj != 0 && anchor.getDistance(player.posX, player.posY, player.posZ) > anchor.dist) {
-                        double xx = player.posX + MoveHandler.mx * 20 - anchor.posX;
-                        double yy = player.posY + MoveHandler.my * 20 - anchor.posY;
-                        double zz = player.posZ + MoveHandler.mz * 20 - anchor.posZ;
-                        double 角度XZ = Math.atan2(xx, zz);
-                        double 角度Y = Math.atan2(yy, Math.hypot(xx, zz));
-                        xyz[0] += -(player.posX - (anchor.posX + Math.sin(角度XZ) * Math.cos(角度Y) * anchor.dist))/10;
-                        xyz[2] += -(player.posZ - (anchor.posZ + Math.cos(角度XZ) * Math.cos(角度Y) * anchor.dist))/10;
-                        xyz[1] += -(player.posY - (anchor.posY + Math.sin(角度Y) * anchor.dist))/10;
-                        xyz[3] = 1;
                     }
                 }
 
@@ -199,79 +177,72 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                         HookShot.packetPipeline.sendToServer(new DistPacket(0.2D, 1));
                         anchor.dist = anchor.getDistanceToEntity(player)+0.2D;
                     }
-
-                    if (anchor != null && anchor.inObj != 0 && anchor.getDistance(player.posX, player.posY, player.posZ) > anchor.dist) {
-                        double xx = player.posX + MoveHandler.mx * 20 - anchor.posX;
-                        double yy = player.posY + MoveHandler.my * 20 - anchor.posY;
-                        double zz = player.posZ + MoveHandler.mz * 20 - anchor.posZ;
-                        double 角度XZ = Math.atan2(xx, zz);
-                        double 角度Y = Math.atan2(yy, Math.hypot(xx, zz));
-                        xyz[0] += -(player.posX - (anchor.posX + Math.sin(角度XZ) * Math.cos(角度Y) * anchor.dist))/10;
-                        xyz[2] += -(player.posZ - (anchor.posZ + Math.cos(角度XZ) * Math.cos(角度Y) * anchor.dist))/10;
-                        xyz[1] += -(player.posY - (anchor.posY + Math.sin(角度Y) * anchor.dist))/10;
-                        xyz[3] = 1;
-                    }
                 }
             }
         }
         return xyz;
     }
 
-    private double[] anchorPull(Entity anchor, Entity e, double[] xyz) {
+    private double[] anchorPull(Entity anchor, Entity e, double[] xyz) {//クライアント側
         if (e == null || anchor == null)
             return xyz;
 
         double xx = anchor.posX - e.posX;
         double yy = anchor.posY - e.posY;
         double zz = anchor.posZ - e.posZ;
-        double 角度XZ = Math.atan2(xx, zz);
-        double 角度Y = Math.atan2(yy, Math.hypot(xx, zz));
+        double rotXZ = Math.atan2(xx, zz);
+        double rotY = Math.atan2(yy, Math.hypot(xx, zz));
 
-        xyz[0] += Math.sin(角度XZ) * Math.cos(角度Y);
-        xyz[2] += Math.cos(角度XZ) * Math.cos(角度Y);
-        xyz[1] += Math.sin(角度Y);
+        xyz[0] += Math.sin(rotXZ) * Math.cos(rotY);
+        xyz[2] += Math.cos(rotXZ) * Math.cos(rotY);
+        xyz[1] += Math.sin(rotY);
 
         e.fallDistance = 0.0F;
 
         return xyz;
     }
 
-    public void アンカー回収(EntityPlayer プレイヤー, ItemStack is) {
-        if (rightAnchorMap.containsKey(プレイヤー) && !rightAnchorMap.get(プレイヤー).isRec()) {
-            rightAnchorMap.get(プレイヤー).rec();
+    public void anchorRec(EntityPlayer player) {//サーバー側
+        if (rightAnchorMap.containsKey(player) && !rightAnchorMap.get(player).isRec) {
+            rightAnchorMap.get(player).rec();
+            rightAnchorMap.remove(player);
         }
 
-        if (leftAnchorMap.containsKey(プレイヤー) && !leftAnchorMap.get(プレイヤー).isRec()) {
-            leftAnchorMap.get(プレイヤー).rec();
+        if (leftAnchorMap.containsKey(player) && !leftAnchorMap.get(player).isRec) {
+            leftAnchorMap.get(player).rec();
+            leftAnchorMap.remove(player);
         }
     }
 
-    public void アンカー発射(int サイド, EntityPlayer player, float 速度, ItemStack is) {
-        if (get燃料(is) > 4) {
-            if (サイド == 0) {
-                if (rightAnchorMap.containsKey(player) && !rightAnchorMap.get(player).isRec()) {
-                    rightAnchorMap.get(player).rec();
-                    return;
-                }
-            } else if (サイド == 1) {
-                if (leftAnchorMap.containsKey(player) && !leftAnchorMap.get(player).isRec()) {
-                    leftAnchorMap.get(player).rec();
-                    return;
-                }
+    public void shotAnchor(int サイド, EntityPlayer player, float 速度, ItemStack is) {//サーバー側
+        if (サイド == DataManager.right) {
+            if (rightAnchorMap.containsKey(player) && !rightAnchorMap.get(player).isRec) {
+                rightAnchorMap.get(player).rec();
+                rightAnchorMap.remove(player);
+                HookShot.packetPipeline.sendTo(new AnchorSPacket(-1, DataManager.right), (EntityPlayerMP) player);
+                return;
             }
-
-            if (サイド == 0 && !rightAnchorMap.containsKey(player)) {
+        } else if (サイド == DataManager.left) {
+            if (leftAnchorMap.containsKey(player) && !leftAnchorMap.get(player).isRec) {
+                leftAnchorMap.get(player).rec();
+                leftAnchorMap.remove(player);
+                HookShot.packetPipeline.sendTo(new AnchorSPacket(-1, DataManager.left), (EntityPlayerMP) player);
+                return;
+            }
+        }
+        if (getFuel(is) > 4) {
+            if (サイド == DataManager.right && !rightAnchorMap.containsKey(player)) {
                 EntityAnchor anchor = new EntityAnchor(0, player, 速度);
                 rightAnchorMap.put(player, anchor);
                 player.worldObj.spawnEntityInWorld(anchor);
-                set燃料(is, 4, player);
-                HookShot.packetPipeline.sendTo(new AnchorSPacket(anchor.getEntityId(), 0), (EntityPlayerMP)player);
-            } else if (サイド == 1 && !leftAnchorMap.containsKey(player)) {
+                setFuel(is, 4, player);
+                HookShot.packetPipeline.sendTo(new AnchorSPacket(anchor.getEntityId(), DataManager.right), (EntityPlayerMP) player);
+            } else if (サイド == DataManager.left && !leftAnchorMap.containsKey(player)) {
                 EntityAnchor anchor = new EntityAnchor(1, player, 速度);
                 leftAnchorMap.put(player, anchor);
                 player.worldObj.spawnEntityInWorld(anchor);
-                set燃料(is, 4, player);
-                HookShot.packetPipeline.sendTo(new AnchorSPacket(anchor.getEntityId(), 1), (EntityPlayerMP)player);
+                setFuel(is, 4, player);
+                HookShot.packetPipeline.sendTo(new AnchorSPacket(anchor.getEntityId(), DataManager.left), (EntityPlayerMP)player);
             }
         }
     }
@@ -282,8 +253,7 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
         return ClientProxy.moveLegModel;
     }
 
-    public ArmorProperties getProperties(EntityLivingBase player, ItemStack armor, DamageSource source,
-                                         double damage, int slot) {
+    public ArmorProperties getProperties(EntityLivingBase player, ItemStack armor, DamageSource source, double damage, int slot) {
         return armorProperty;
     }
 
@@ -293,41 +263,34 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
     }
 
     @Override
-    public void damageArmor(EntityLivingBase entity, ItemStack stack, DamageSource source, int damage, int slot) {
-    }
+    public void damageArmor(EntityLivingBase entity, ItemStack stack, DamageSource source, int damage, int slot) {}
 
-    public static int get燃料(ItemStack is) {
-        if (is.hasTagCompound() && is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND) != null && is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND) != null) {
+    public static int getFuel(ItemStack is) {
+        if (is.hasTagCompound() && is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND) != null && is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND) != null)
             if (is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND).tagCount() > 0 && is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND).tagCount() > 0) {
                 NBTTagCompound nbt = is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
-                int j = nbt.getByte("Slot") & 255;
                 ItemStack 左 = ItemStack.loadItemStackFromNBT(nbt);
                 nbt = is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
-                j = nbt.getByte("Slot") & 255;
                 ItemStack 右 = ItemStack.loadItemStackFromNBT(nbt);
                 return ((左.getMaxDamage() + 右.getMaxDamage()) - (左.getItemDamage() + 右.getItemDamage()));
             }
-        }
         return 0;
     }
 
-    public static int 最大燃料量(ItemStack is) {
-        if (is.hasTagCompound() && is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND) != null && is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND) != null) {
+    public static int getMaxFuel(ItemStack is) {
+        if (is.hasTagCompound() && is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND) != null && is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND) != null)
             if (is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND).tagCount() > 0 && is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND).tagCount() > 0) {
                 NBTTagCompound nbt = is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
-                int j = nbt.getByte("Slot") & 255;
                 ItemStack 左 = ItemStack.loadItemStackFromNBT(nbt);
                 nbt = is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
-                j = nbt.getByte("Slot") & 255;
                 ItemStack 右 = ItemStack.loadItemStackFromNBT(nbt);
                 return 左.getMaxDamage() + 右.getMaxDamage();
             }
-        }
 
         return 0;
     }
 
-    public static boolean 左燃料あるか(ItemStack is) {
+    public static boolean hasLeftFuel(ItemStack is) {
         if (is.hasTagCompound() && is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND) != null) {
             if (is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND).tagCount() > 0) {
                 return true;
@@ -337,7 +300,7 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
         return false;
     }
 
-    public static boolean 右燃料あるか(ItemStack is) {
+    public static boolean hasRightFuel(ItemStack is) {
         if (is.hasTagCompound() && is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND) != null) {
             if (is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND).tagCount() > 0) {
                 return true;
@@ -347,14 +310,12 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
         return false;
     }
 
-    public static void set燃料(ItemStack is, int ダメージ, EntityPlayer p) {
+    public static void setFuel(ItemStack is, int ダメージ, EntityPlayer p) {
         if (is.hasTagCompound() && is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND) != null && is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND) != null) {
             if (is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND).tagCount() > 0 && is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND).tagCount() > 0) {
-                NBTTagCompound nbttagcompound1 = (NBTTagCompound) is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
-                int j = nbttagcompound1.getByte("Slot") & 255;
+                NBTTagCompound nbttagcompound1 = is.getTagCompound().getTagList("lgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
                 ItemStack 左 = ItemStack.loadItemStackFromNBT(nbttagcompound1);
                 nbttagcompound1 = is.getTagCompound().getTagList("rgbitems", Constants.NBT.TAG_COMPOUND).getCompoundTagAt(0);
-                j = nbttagcompound1.getByte("Slot") & 255;
                 ItemStack 右 = ItemStack.loadItemStackFromNBT(nbttagcompound1);
                 左.setItemDamage(左.getItemDamage() + ダメージ);
                 右.setItemDamage(右.getItemDamage() + ダメージ);
@@ -374,7 +335,7 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
         }
     }
 
-    public static boolean 刃があるか(ItemStack is) {
+    public static boolean hasBlade(ItemStack is) {
         if (is == null || !is.hasTagCompound()) {
             return false;
         } else if (is.getTagCompound().getTagList("litems", Constants.NBT.TAG_COMPOUND) != null && is.getTagCompound().getTagList("ritems", Constants.NBT.TAG_COMPOUND) != null) {
@@ -386,7 +347,7 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
         return false;
     }
 
-    public static void 右刃を一枚使う(ItemStack is) {
+    public static void useRightBlade(ItemStack is) {
         if (is.hasTagCompound() && is.getTagCompound().getTagList("litems", Constants.NBT.TAG_COMPOUND) != null) {
             if (is.getTagCompound().getTagList("litems", Constants.NBT.TAG_COMPOUND).tagCount() > 0) {
                 if (is.getTagCompound().getTagList("litems", Constants.NBT.TAG_COMPOUND) != null) {
@@ -406,14 +367,14 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
         }
     }
 
-    public static void 左刃を一枚使う(ItemStack is) {
+    public static void useLeftBlade(ItemStack is) {
         if (is.getTagCompound().getTagList("ritems", Constants.NBT.TAG_COMPOUND) != null) {
             if (is.getTagCompound().getTagList("ritems", Constants.NBT.TAG_COMPOUND).tagCount() > 0) {
                 if (is.getTagCompound().getTagList("ritems", Constants.NBT.TAG_COMPOUND) != null) {
                     NBTTagList nbttaglist = is.getTagCompound().getTagList("ritems", Constants.NBT.TAG_COMPOUND);
 
                     for (int i = 0; i < nbttaglist.tagCount(); ++i) {
-                        NBTTagCompound nbttagcompound1 = (NBTTagCompound) nbttaglist.getCompoundTagAt(i);
+                        NBTTagCompound nbttagcompound1 = nbttaglist.getCompoundTagAt(i);
                         int j = nbttagcompound1.getByte("Slot") & 255;
 
                         if (j >= 0 && j < 6) {

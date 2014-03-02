@@ -132,9 +132,9 @@ public class ModelMoveLeggings extends ModelBiped
         LParts.render(f5);
         RParts.render(f5);
         Gus.render(f5);
-        if(ItemMoveLeggings.右燃料あるか(((EntityPlayer) entity).getCurrentArmor(1)))
+        if(ItemMoveLeggings.hasRightFuel(((EntityPlayer) entity).getCurrentArmor(1)))
             Gus1.render(f5);
-        if(ItemMoveLeggings.左燃料あるか(((EntityPlayer)entity).getCurrentArmor(1)))
+        if(ItemMoveLeggings.hasLeftFuel(((EntityPlayer) entity).getCurrentArmor(1)))
             Gus2.render(f5);
         GL11.glTranslatef(0.0F,0.0F,-0.1F);
         GL11.glScaled(1.4D,1.4D,1.4D);

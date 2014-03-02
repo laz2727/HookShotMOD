@@ -3,13 +3,11 @@ package ssHookShot.Entity;
 import java.util.List;
 
 import net.minecraft.block.Block;
-import net.minecraft.enchantment.EnchantmentThorns;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IProjectile;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -26,16 +24,14 @@ import ssHookShot.HookShot;
 
 public class EntityKenn extends EntityArrow implements IProjectile,IThrowableEntity
 {
-    private boolean 初回更新 = true;
+    private boolean firstUpdate = true;
     private int xTile = -1;
     private int yTile = -1;
     private int zTile = -1;
-    private Entity hitEntity;
-    private ItemStack is;
     private Block inTile;
     private int inData = 0;
     public int inObj = 0;//0なら何にも刺さってない1がブロック2がEntity
-    public EntityPlayer 打った人;
+    public EntityPlayer shooter;
     private int ticksInGround;
     public int ticksInAir = 0;
 
@@ -49,7 +45,7 @@ public class EntityKenn extends EntityArrow implements IProjectile,IThrowableEnt
     public EntityKenn(EntityPlayer par2EntityLiving, float par3,float 差)
     {
         super(par2EntityLiving.worldObj);
-        this.打った人 = par2EntityLiving;
+        this.shooter = par2EntityLiving;
         double xx = Math.cos(((double)par2EntityLiving.rotationYaw) * Math.PI / 180.0D) * 差;
         double zz = Math.sin(((double)par2EntityLiving.rotationYaw) * Math.PI / 180.0D) * 差;
         this.setLocationAndAngles(par2EntityLiving.posX, par2EntityLiving.posY + (double)par2EntityLiving.getEyeHeight(), par2EntityLiving.posZ, par2EntityLiving.rotationYaw, par2EntityLiving.rotationPitch);
@@ -122,17 +118,17 @@ public class EntityKenn extends EntityArrow implements IProjectile,IThrowableEnt
         super.onEntityUpdate();
 
         if(!this.worldObj.isRemote){
-            if(this.打った人 == null||this.打った人.isDead)
+            if(this.shooter == null||this.shooter.isDead)
             {
                 this.setDead();
                 return;
             }
         }
 
-        if(初回更新&&!this.worldObj.isRemote)//最初の一回だけ呼ばれる
+        if(firstUpdate &&!this.worldObj.isRemote)//最初の一回だけ呼ばれる
         {
-            this.dataWatcher.updateObject(17,this.打った人.getDisplayName());
-            初回更新 = false;//二回目呼ばれないように
+            this.dataWatcher.updateObject(17, this.shooter.getDisplayName());
+            firstUpdate = false;//二回目呼ばれないように
         }
 
         if (this.prevRotationPitch == 0.0F && this.prevRotationYaw == 0.0F)
@@ -178,32 +174,6 @@ public class EntityKenn extends EntityArrow implements IProjectile,IThrowableEnt
                 this.ticksInAir = 0;
             }
         }
-        else if(this.inObj == 2)//エンティティに刺さってるとき
-        {
-            this.posX = this.hitEntity.posX;
-            this.posY = this.hitEntity.posY+this.hitEntity.getEyeHeight()*0.8F;
-            this.posZ = this.hitEntity.posZ;
-
-            this.setPosition(this.posX,this.posY,this.posZ);
-
-            if (!this.hitEntity.isDead)
-            {
-                ++this.ticksInGround;
-                if(this.ticksInGround>500)
-                {
-                    this.setDead();
-                }
-            }
-            else//エンティティがなくなったら
-            {
-                this.inObj = 0;
-                this.motionX *= (double)(this.rand.nextFloat() * 0.2F);
-                this.motionY *= (double)(this.rand.nextFloat() * 0.2F);
-                this.motionZ *= (double)(this.rand.nextFloat() * 0.2F);
-                this.ticksInGround = 0;
-                this.ticksInAir = 0;
-            }
-        }
         else//空中にいるとき
         {
             ++this.ticksInAir;
@@ -228,7 +198,7 @@ public class EntityKenn extends EntityArrow implements IProjectile,IThrowableEnt
             {
                 Entity entity1 = (Entity)list.get(l);
 
-                if (entity1.canBeCollidedWith() && (entity1 != this.打った人 || this.ticksInAir >= 5))
+                if (entity1.canBeCollidedWith() && (entity1 != this.shooter || this.ticksInAir >= 5))
                 {
                     f1 = 0.5F;
                     AxisAlignedBB axisalignedbb1 = entity1.boundingBox.expand((double)f1, (double)f1, (double)f1);
@@ -264,9 +234,9 @@ public class EntityKenn extends EntityArrow implements IProjectile,IThrowableEnt
 
                     DamageSource damagesource = null;
 
-                    if (this.打った人 != null)
+                    if (this.shooter != null)
                     {
-                        damagesource = DamageSource.causePlayerDamage(this.打った人);
+                        damagesource = DamageSource.causePlayerDamage(this.shooter);
                     }
 
                     if (this.isBurning() && !(movingobjectposition.entityHit instanceof EntityEnderman))
@@ -393,12 +363,12 @@ public class EntityKenn extends EntityArrow implements IProjectile,IThrowableEnt
 
     @Override
     public Entity getThrower() {
-        return this.打った人;
+        return this.shooter;
     }
 
     @Override
     public void setThrower(Entity entity) {
-        this.打った人 = (EntityPlayer)entity;
+        this.shooter = (EntityPlayer)entity;
     }
 
     @Override
@@ -406,7 +376,7 @@ public class EntityKenn extends EntityArrow implements IProjectile,IThrowableEnt
     {
         if (!this.worldObj.isRemote && this.inObj>0)
         {
-            if (par1EntityPlayer.inventory.addItemStackToInventory(new ItemStack(HookShot.instance.折れた刃, 1)))
+            if (par1EntityPlayer.inventory.addItemStackToInventory(new ItemStack(HookShot.instance.itemCrashedBlade, 1)))
             {
                 this.playSound("random.pop", 0.2F, ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
                 this.setDead();

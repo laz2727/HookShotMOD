@@ -8,6 +8,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.IProjectile;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.AxisAlignedBB;
@@ -18,21 +19,25 @@ import net.minecraft.world.World;
 import cpw.mods.fml.common.registry.IThrowableEntity;
 import cpw.mods.fml.relauncher.Side;
 import ssHookShot.HookShot;
+import ssHookShot.Packet.AnchorSPacket;
 import ssHookShot.item.ItemMoveLeggings;
+import ssHookShot.system.DataManager;
+
+import javax.xml.crypto.Data;
 
 public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableEntity
 {
-    private boolean firstUpdate = true;
+    public boolean firstUpdate = true;
     private int サイド;//0なら左で1なら右
     private int xTile = -1;
     private int yTile = -1;
     private int zTile = -1;
+    public boolean isRec = false;
     public Entity hitEntity;
     private Block inTile;
     private int inData;
     public int inObj;//0なら何にも刺さってない1がブロック2がEntity
-    public EntityPlayer shooter;//打った人
-    private int ticksInGround;
+    public EntityPlayer shooter;//shooter
     public int ticksInAir;
     public double dist;
 
@@ -69,7 +74,6 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
     {
         this.dataWatcher.addObject(17, "");//打ったプレイヤーの名前
         this.dataWatcher.addObject(18, 0);
-        this.dataWatcher.addObject(19, 0);//0が回収前で1が回収中
     }
 
     public void setThrowableHeading(double par1, double par3, double par5, float par7, float par8)
@@ -90,7 +94,6 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
         float f3 = MathHelper.sqrt_double(par1 * par1 + par5 * par5);
         this.prevRotationYaw = this.rotationYaw = (float)(Math.atan2(par1, par5) * 180.0D / Math.PI);
         this.prevRotationPitch = this.rotationPitch = (float)(Math.atan2(par3, (double)f3) * 180.0D / Math.PI);
-        this.ticksInGround = 0;
     }
 
     @SideOnly(Side.CLIENT)
@@ -115,7 +118,6 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
             this.prevRotationPitch = this.rotationPitch;
             this.prevRotationYaw = this.rotationYaw;
             this.setLocationAndAngles(this.posX, this.posY, this.posZ, this.rotationYaw, this.rotationPitch);
-            this.ticksInGround = 0;
         }
     }
 
@@ -123,32 +125,61 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
     {
         super.onEntityUpdate();
 
-        if(this.shooter == null||this.shooter.isDead)
-        {
+        if (this.shooter == null) {
             this.setDead();
             return;
         }
 
-        if(this.shooter == hitEntity)
-        {
+        if (this.shooter.isDead) {
+            if (!shooter.worldObj.isRemote) {
+                if (getSide() == DataManager.right) {
+                    ItemMoveLeggings.rightAnchorMap.remove(shooter);
+                    HookShot.packetPipeline.sendTo(new AnchorSPacket(-1, DataManager.right), (EntityPlayerMP) shooter);
+                } else if (getSide() == DataManager.left) {
+                    ItemMoveLeggings.leftAnchorMap.remove(shooter);
+                    HookShot.packetPipeline.sendTo(new AnchorSPacket(-1, DataManager.left), (EntityPlayerMP) shooter);
+                }
+            }
             this.setDead();
             return;
         }
 
-        if(this.shooter.getDistanceToEntity(this) > 150)
-        {
+        if (this.shooter == hitEntity) {
+            if (!shooter.worldObj.isRemote) {
+                if (getSide() == 0) {
+                    ItemMoveLeggings.rightAnchorMap.remove(shooter);
+                    HookShot.packetPipeline.sendTo(new AnchorSPacket(-1, 0), (EntityPlayerMP) shooter);
+                } else if (getSide() == 1) {
+                    ItemMoveLeggings.leftAnchorMap.remove(shooter);
+                    HookShot.packetPipeline.sendTo(new AnchorSPacket(-1, 0), (EntityPlayerMP) shooter);
+                }
+            }
+            this.setDead();
+            return;
+        }
+
+        if (this.shooter.getDistanceToEntity(this) > 150) {
+            if (!shooter.worldObj.isRemote) {
+                if (getSide() == 0) {
+                    ItemMoveLeggings.rightAnchorMap.remove(shooter);
+                    HookShot.packetPipeline.sendTo(new AnchorSPacket(-1, 0), (EntityPlayerMP) shooter);
+                } else if (getSide() == 1) {
+                    ItemMoveLeggings.leftAnchorMap.remove(shooter);
+                    HookShot.packetPipeline.sendTo(new AnchorSPacket(-1, 0), (EntityPlayerMP) shooter);
+                }
+            }
             rec();
         }
 
         if(this.shooter.getCurrentArmor(1) == null ||
                 (this.shooter.getCurrentArmor(1) != null &&
-                        this.shooter.getCurrentArmor(1).getItem() != HookShot.instance.moveLeg))
+                        this.shooter.getCurrentArmor(1).getItem() != HookShot.instance.itemMoveLeg))
         {
             this.setDead();
             return;
         }
 
-        if(firstUpdate &&!this.worldObj.isRemote)//最初の一回だけ呼ばれる
+        if(firstUpdate && shooter instanceof EntityPlayerMP)//最初の一回だけ呼ばれる
         {
             this.playSound("random.click", 1.0F, 1.2F / (this.rand.nextFloat() * 0.2F + 0.9F));
 
@@ -157,15 +188,17 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
             firstUpdate = false;//二回目呼ばれないように
         }
 
+
+
         if (this.prevRotationPitch == 0.0F && this.prevRotationYaw == 0.0F)
         {
-            float f = MathHelper.sqrt_double(this.motionX * this.motionX + this.motionZ * this.motionZ);
+            float f = MathHelper.sqrt_double((this.motionX * this.motionX) + (this.motionZ * this.motionZ));
             this.prevRotationYaw = this.rotationYaw = (float)(Math.atan2(this.motionX, this.motionZ) * 180.0D / Math.PI);
             this.prevRotationPitch = this.rotationPitch = (float)(Math.atan2(this.motionY, (double)f) * 180.0D / Math.PI);
         }
 
-        if(isRec()){
-            Vec3 fc = Vec3.createVectorHelper(this.shooter.posX-this.posX,this.shooter.posY-this.posY+1,this.shooter.posZ-this.posZ);
+        if(isRec){
+            Vec3 fc = Vec3.createVectorHelper(this.shooter.posX-this.posX,this.shooter.posY-this.posY,this.shooter.posZ-this.posZ);
 
             this.motionX = fc.xCoord*0.3F;
             this.motionY = fc.yCoord*0.3F;
@@ -175,7 +208,7 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
             this.posY += this.motionY;
             this.posZ += this.motionZ;
 
-            float f2 = MathHelper.sqrt_double(this.motionX * this.motionX + this.motionZ * this.motionZ);
+            float f2 = MathHelper.sqrt_double((this.motionX * this.motionX) + (this.motionZ * this.motionZ));
             this.rotationYaw = (float)(Math.atan2(this.motionX, this.motionZ) * 180.0D / Math.PI);
 
             for (this.rotationPitch = (float)(Math.atan2(this.motionY, (double)f2) * 180.0D / Math.PI); this.rotationPitch - this.prevRotationPitch < -180.0F; this.prevRotationPitch -= 360.0F);
@@ -200,11 +233,11 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
 
             this.setPosition(this.posX, this.posY, this.posZ);
 
-            //完全にmoveLeggingsに依存している
-            if(this.getDistanceToEntity(this.shooter)<1){
+            if(this.getDistanceToEntity(this.shooter)<2)
+            {
                 this.setDead();
-                this.inObj = 0;
             }
+
             return;
         }
 
@@ -221,29 +254,21 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
             }
         }
 
-        if(!this.worldObj.isRemote)
-        {
-            int i;
-        }
-
         if (this.inObj == 1)//ブロックに刺さっているとき
         {
             Block j = this.worldObj.getBlock(this.xTile, this.yTile, this.zTile);
             int k = this.worldObj.getBlockMetadata(this.xTile, this.yTile, this.zTile);
 
-            if (this.inTile != null &&j == this.inTile && k == this.inData)
-            {
-                ++this.ticksInGround;
-            }
-            else//ブロックがなくなったら
-            {
+            if (this.inTile == null || j != this.inTile || k != this.inData) {
                 this.inObj = 0;
                 this.motionX *= (double)(this.rand.nextFloat() * 0.2F);
                 this.motionY *= (double)(this.rand.nextFloat() * 0.2F);
                 this.motionZ *= (double)(this.rand.nextFloat() * 0.2F);
-                this.ticksInGround = 0;
                 this.ticksInAir = 0;
             }
+            //ブロックがなくなったら
+
+
         }
         else if(this.inObj == 2)//エンティティに刺さってるとき
         {
@@ -253,19 +278,16 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
 
             this.setPosition(this.posX,this.posY,this.posZ);
 
-            if (!this.hitEntity.isDead)
-            {
-                ++this.ticksInGround;
-            }
-            else//エンティティがなくなったら
-            {
+            if (this.hitEntity.isDead) {
                 this.inObj = 0;
                 this.motionX *= (double)(this.rand.nextFloat() * 0.2F);
                 this.motionY *= (double)(this.rand.nextFloat() * 0.2F);
                 this.motionZ *= (double)(this.rand.nextFloat() * 0.2F);
-                this.ticksInGround = 0;
                 this.ticksInAir = 0;
             }
+            //エンティティがなくなったら
+
+
         }
         else//空中にいるとき
         {
@@ -378,7 +400,6 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
             this.rotationPitch = this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * 0.2F;
             this.rotationYaw = this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * 0.2F;
             float f4 = 0.99F;
-            f1 = 0.05F;
 
             if (this.isInWater())
             {
@@ -399,8 +420,7 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
     }
 
     public void rec(){//回収
-        if(!worldObj.isRemote)
-            this.dataWatcher.updateObject(19,1);
+        isRec = true;
         inObj = 0;
     }
 
@@ -408,7 +428,10 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
 
     public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound){}
 
-    public void onCollideWithPlayer(EntityPlayer par1EntityPlayer){}
+    public void onCollideWithPlayer(EntityPlayer par1EntityPlayer)
+    {
+
+    }
 
     protected boolean canTriggerWalking()
     {
@@ -433,7 +456,8 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
 
     @Override
     public void setThrower(Entity entity) {
-        this.shooter = (EntityPlayer)entity;
+        if(shooter == null)
+            this.shooter = (EntityPlayer)entity;
     }
 
     public String getShooterName() {
@@ -444,14 +468,8 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
         return this.dataWatcher.getWatchableObjectInt(18);
     }
 
-    public boolean isRec() {
-        return this.dataWatcher.getWatchableObjectInt(19) == 1;
-    }
-
     public void setDead()
     {
-        if(!worldObj.isRemote)
-            ((ItemMoveLeggings) HookShot.instance.moveLeg).アンカー解除(this.shooter,this.サイド);
         super.setDead();
     }
 

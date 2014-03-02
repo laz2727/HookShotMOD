@@ -13,7 +13,7 @@ public class SlotSoutiGus extends Slot
 	}
 	public boolean isItemValid(ItemStack par1ItemStack)
 	{
-		return par1ItemStack == null ? false : par1ItemStack.getItem() == HookShot.instance.燃料;
+		return par1ItemStack == null ? false : par1ItemStack.getItem() == HookShot.instance.itemFuel;
 	}
 	
 	public int getSlotStackLimit()
