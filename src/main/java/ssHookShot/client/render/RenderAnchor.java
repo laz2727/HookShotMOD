@@ -78,9 +78,9 @@ public class RenderAnchor extends Render
         GL11.glDisable(GL12.GL_RESCALE_NORMAL);
         GL11.glPopMatrix();
 
-        int サイド = 0;
-        if(entityAnchor.getSide() == 0)サイド = 90;
-        else if(entityAnchor.getSide() == 1)サイド = -90;
+        int side = 0;
+        if(entityAnchor.getSide() == 0)side = 90;
+        else if(entityAnchor.getSide() == 1)side = -90;
 
         if (mc.thePlayer != null&&mc.thePlayer.getDisplayName().equals(entityAnchor.getShooterName()))
         {
@@ -92,8 +92,8 @@ public class RenderAnchor extends Render
             vec3.rotateAroundY(f101 * 0.5F);
             vec3.rotateAroundX(-f101 * 0.7F);
 
-            double d0 = -Math.cos(((double)mc.thePlayer.rotationYaw+90+サイド) * Math.PI / 180.0D) * 0.4D;
-            double d1 = -Math.sin(((double) mc.thePlayer.rotationYaw + 90 + サイド) * Math.PI / 180.0D) * 0.4D;
+            double d0 = -Math.cos(((double)mc.thePlayer.rotationYaw+90+side) * Math.PI / 180.0D) * 0.4D;
+            double d1 = -Math.sin(((double) mc.thePlayer.rotationYaw + 90 + side) * Math.PI / 180.0D) * 0.4D;
             double d3 = mc.thePlayer.posX+d0;
             double d4 = mc.thePlayer.posY+mc.thePlayer.getEyeHeight();
             double d5 = mc.thePlayer.posZ+d1;
@@ -152,8 +152,8 @@ public class RenderAnchor extends Render
             vec3.rotateAroundY(-(e.prevRotationYaw + (e.rotationYaw - e.prevRotationYaw) * par9) * (float)Math.PI / 180.0F);
             vec3.rotateAroundY(f101 * 0.5F);
             vec3.rotateAroundX(-f101 * 0.7F);
-            double d0 = -Math.cos(((double)e.rotationYaw+90+サイド) * Math.PI / 180.0D) * 0.4D;
-            double d1 = -Math.sin(((double)e.rotationYaw+90+サイド) * Math.PI / 180.0D) * 0.4D;
+            double d0 = -Math.cos(((double)e.rotationYaw+90+side) * Math.PI / 180.0D) * 0.4D;
+            double d1 = -Math.sin(((double)e.rotationYaw+90+side) * Math.PI / 180.0D) * 0.4D;
             double d3 = e.posX+d0;
             double d4 = e.posY-0.6F;
             double d5 = e.posZ+d1;

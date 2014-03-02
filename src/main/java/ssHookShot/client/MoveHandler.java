@@ -4,6 +4,7 @@ import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.client.Minecraft;
+import ssHookShot.item.ItemMoveLeggings;
 
 public class MoveHandler {
     private static Minecraft mc = FMLClientHandler.instance().getClient();
@@ -32,7 +33,11 @@ public class MoveHandler {
                 oldFlag = flag;
                 flag = 0;
             } else if(oldFlag > 0&&flag == 0) {
-                c = 40;
+                if(x == 0||y == 0||z == 0)
+                {
+                    c = 0;
+                }
+                else c = 40;
                 oldFlag = 0;
             }
             if (c > 0) {
