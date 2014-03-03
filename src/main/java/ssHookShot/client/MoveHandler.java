@@ -4,7 +4,9 @@ import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.ChatComponentText;
 import ssHookShot.item.ItemMoveLeggings;
+import ssHookShot.system.DataManager;
 
 public class MoveHandler {
     private static Minecraft mc = FMLClientHandler.instance().getClient();
@@ -24,9 +26,17 @@ public class MoveHandler {
 
         if (mc.thePlayer.equals(event.player) && event.phase.equals(TickEvent.Phase.START)) {
             if (flag > 0) {
-                mx += x / 5;
-                my += y / 5;
-                mz += z / 5;
+                mx = x / 2;
+                my = y / 2;
+                mz = z / 2;
+
+                if(DataManager.isKeyPress(mc.thePlayer, DataManager.keyLeftAnchorRec)||DataManager.isKeyPress(mc.thePlayer, DataManager.keyRightAnchorRec))
+                {
+                    mx += Math.cos(Math.toRadians(mc.thePlayer.rotationYaw + 90))*Math.cos(Math.toRadians(mc.thePlayer.rotationPitch));
+                    mz += Math.sin(Math.toRadians(mc.thePlayer.rotationYaw + 90))*Math.cos(Math.toRadians(mc.thePlayer.rotationPitch));
+                    my += -Math.cos(Math.toRadians(mc.thePlayer.rotationPitch - 90));
+                }
+
                 mc.thePlayer.motionX = mx;
                 mc.thePlayer.motionY = my;
                 mc.thePlayer.motionZ = mz;
@@ -35,12 +45,18 @@ public class MoveHandler {
             } else if(oldFlag > 0&&flag == 0) {
                 if(x == 0||y == 0||z == 0)
                 {
-                    c = 0;
+                    mc.thePlayer.motionX = 0;
+                    mc.thePlayer.motionY = 0;
+                    mc.thePlayer.motionZ = 0;
+                    mx = 0;
+                    my = 0;
+                    mz = 0;
                 }
-                else c = 40;
+                else {
+                    c = 40;
+                }
                 oldFlag = 0;
-            }
-            if (c > 0) {
+            } else if (c > 0) {
                 c--;
                 mc.thePlayer.motionX = mx;
                 mc.thePlayer.motionY = my;

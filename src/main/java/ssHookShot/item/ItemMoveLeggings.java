@@ -139,18 +139,6 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                         HookShot.packetPipeline.sendToServer(new DistPacket(0.2D, 0));
                         anchor.dist = anchor.getDistanceToEntity(player)+0.2D;
                     }
-
-                    if (anchor != null && anchor.inObj != 0 && anchor.getDistance(player.posX, player.posY, player.posZ) > anchor.dist) {
-                        double xx = player.posX - anchor.posX;
-                        double yy = player.posY + player.motionY - anchor.posY;
-                        double zz = player.posZ - anchor.posZ;
-                        double 角度XZ = Math.atan2(xx, zz);
-                        double 角度Y = Math.atan2(yy, Math.hypot(xx, zz));
-                        xyz[0] += -(player.posX - (anchor.posX + Math.sin(角度XZ) * Math.cos(角度Y) * anchor.dist))/10;
-                        xyz[2] += -(player.posZ - (anchor.posZ + Math.cos(角度XZ) * Math.cos(角度Y) * anchor.dist))/10;
-                        xyz[1] += -(player.posY - (anchor.posY + Math.sin(角度Y) * anchor.dist))/10;
-                        xyz[3] = 1;
-                    }
                 }
             }
             if (leftAnchorMap.containsKey(player)) {
@@ -187,17 +175,6 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
                     } else if (DataManager.isKeyPress(player, DataManager.keyLeftAnchorExtend)) {
                         HookShot.packetPipeline.sendToServer(new DistPacket(0.2D, 1));
                         anchor.dist = anchor.getDistanceToEntity(player)+0.2D;
-                    }
-                    if (anchor != null && anchor.inObj != 0 && anchor.getDistance(player.posX, player.posY, player.posZ) > anchor.dist) {
-                        double xx = player.posX - anchor.posX;
-                        double yy = player.posY + player.motionY - anchor.posY;
-                        double zz = player.posZ - anchor.posZ;
-                        double 角度XZ = Math.atan2(xx, zz);
-                        double 角度Y = Math.atan2(yy, Math.hypot(xx, zz));
-                        xyz[0] += -(player.posX - (anchor.posX + Math.sin(角度XZ) * Math.cos(角度Y) * anchor.dist))/10;
-                        xyz[2] += -(player.posZ - (anchor.posZ + Math.cos(角度XZ) * Math.cos(角度Y) * anchor.dist))/10;
-                        xyz[1] += -(player.posY - (anchor.posY + Math.sin(角度Y) * anchor.dist))/10;
-                        xyz[3] = 1;
                     }
                 }
             }
