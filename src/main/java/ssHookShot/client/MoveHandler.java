@@ -5,8 +5,10 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
+import ssHookShot.HookShot;
 import ssHookShot.item.ItemMoveLeggings;
 import ssHookShot.system.DataManager;
+import sun.net.www.content.text.plain;
 
 public class MoveHandler {
     private static Minecraft mc = FMLClientHandler.instance().getClient();
@@ -30,7 +32,12 @@ public class MoveHandler {
                 my = y / 2;
                 mz = z / 2;
 
-                if(DataManager.isKeyPress(mc.thePlayer, DataManager.keyLeftAnchorRec)||DataManager.isKeyPress(mc.thePlayer, DataManager.keyRightAnchorRec))
+                if(mc.thePlayer.getCurrentEquippedItem() != null&&mc.thePlayer.getCurrentEquippedItem().getItem() == HookShot.instance.itemSword&&mc.thePlayer.getItemInUseCount() > 0)
+                {
+                    mc.thePlayer.rotationYaw += 30;
+                    if(mc.thePlayer.rotationYaw > 360)mc.thePlayer.rotationYaw -= 360;
+                }
+                else if(DataManager.isKeyPress(mc.thePlayer, DataManager.keyLeftAnchorRec)||DataManager.isKeyPress(mc.thePlayer, DataManager.keyRightAnchorRec))
                 {
                     mx += Math.cos(Math.toRadians(mc.thePlayer.rotationYaw + 90))*Math.cos(Math.toRadians(mc.thePlayer.rotationPitch));
                     mz += Math.sin(Math.toRadians(mc.thePlayer.rotationYaw + 90))*Math.cos(Math.toRadians(mc.thePlayer.rotationPitch));

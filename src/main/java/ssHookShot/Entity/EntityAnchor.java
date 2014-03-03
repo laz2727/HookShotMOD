@@ -259,33 +259,50 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
 
             if (this.inTile == null || j != this.inTile || k != this.inData) {
                 this.inObj = 0;
-                this.motionX *= (double)(this.rand.nextFloat() * 0.2F);
-                this.motionY *= (double)(this.rand.nextFloat() * 0.2F);
-                this.motionZ *= (double)(this.rand.nextFloat() * 0.2F);
+                this.motionX *= (double) (this.rand.nextFloat() * 0.2F);
+                this.motionY *= (double) (this.rand.nextFloat() * 0.2F);
+                this.motionZ *= (double) (this.rand.nextFloat() * 0.2F);
                 this.ticksInAir = 0;
+                if (!shooter.worldObj.isRemote) {
+                    if (getSide() == DataManager.right) {
+                        ItemMoveLeggings.rightAnchorMap.remove(shooter);
+                        HookShot.packetPipeline.sendTo(new AnchorSPacket(-1, DataManager.right), (EntityPlayerMP) shooter);
+                    } else if (getSide() == DataManager.left) {
+                        ItemMoveLeggings.leftAnchorMap.remove(shooter);
+                        HookShot.packetPipeline.sendTo(new AnchorSPacket(-1, DataManager.left), (EntityPlayerMP) shooter);
+                    }
+                }
             }
             //ブロックがなくなったら
 
 
-        }
-        else if(this.inObj == 2)//エンティティに刺さってるとき
+        } else if (this.inObj == 2)//エンティティに刺さってるとき
         {
             this.posX = this.hitEntity.posX;
             this.posY = this.hitEntity.posY;
             this.posZ = this.hitEntity.posZ;
 
-            this.setPosition(this.posX,this.posY,this.posZ);
+            this.setPosition(this.posX, this.posY, this.posZ);
 
             if (this.hitEntity.isDead) {
                 this.inObj = 0;
-                this.motionX *= (double)(this.rand.nextFloat() * 0.2F);
-                this.motionY *= (double)(this.rand.nextFloat() * 0.2F);
-                this.motionZ *= (double)(this.rand.nextFloat() * 0.2F);
+                this.motionX *= (double) (this.rand.nextFloat() * 0.2F);
+                this.motionY *= (double) (this.rand.nextFloat() * 0.2F);
+                this.motionZ *= (double) (this.rand.nextFloat() * 0.2F);
                 this.ticksInAir = 0;
+                if (!shooter.worldObj.isRemote) {
+                    if (getSide() == DataManager.right) {
+                        ItemMoveLeggings.rightAnchorMap.remove(shooter);
+                        setDead();
+                        HookShot.packetPipeline.sendTo(new AnchorSPacket(-1, DataManager.right), (EntityPlayerMP) shooter);
+                    } else if (getSide() == DataManager.left) {
+                        ItemMoveLeggings.leftAnchorMap.remove(shooter);
+                        setDead();
+                        HookShot.packetPipeline.sendTo(new AnchorSPacket(-1, DataManager.left), (EntityPlayerMP) shooter);
+                    }
+                }
             }
             //エンティティがなくなったら
-
-
         }
         else//空中にいるとき
         {

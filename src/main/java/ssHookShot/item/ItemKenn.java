@@ -74,16 +74,21 @@ public class ItemKenn extends ItemSword implements IItemRenderer {
                     waitTime.put(p, waitTime.get(p) - 1);//1へらす
 
                 if (par5 && p.isUsingItem()) {
-                    List<Entity> list = p.worldObj.getEntitiesWithinAABB(Entity.class, p.boundingBox.expand(1, 1, 1));
+                    List<Entity> list = p.worldObj.getEntitiesWithinAABB(Entity.class, p.boundingBox.expand(3, 3, 3));
                     Iterator<Entity> it = list.iterator();
 
+
+                    boolean flag = false;
                     while (it.hasNext()) {
                         Entity e = it.next();
-                        if (!(e instanceof EntityXPOrb) && !(e instanceof EntityItem) && e != p)//もっる人と経験値とアイテムには攻撃しない
+                        if (!(e instanceof EntityXPOrb) && !(e instanceof EntityItem) && e != p)//もってる人と経験値とアイテムには攻撃しない
                         {
-                            attack(par1ItemStack, p, e, false);
+                            boolean a = attack(par1ItemStack, p, e);
+                            if(a) flag = true;
                         }
                     }
+                    if(flag)
+                       waitTime.put(p, 20);
                 }
 
                 lastMotion.put(p, new PlayerXYZ(p.posX, p.posY, p.posZ));//前tickの座標をほぞん(攻撃力の判定で使う)
@@ -94,7 +99,6 @@ public class ItemKenn extends ItemSword implements IItemRenderer {
                     kenn = new EntityKenn(p, 3.0F, -1);
                     p.worldObj.spawnEntityInWorld(kenn);
                     par1ItemStack.setItemDamage(DAMAGE + 1);//剣破壊
-                    return;
                 } else if (DataManager.isKeyPress(p, DataManager.keyReload) && par1ItemStack.getItemDamage() > 0)//左クリックが押されていて剣が傷ついてたら
                 {
                     if (p.getCurrentArmor(1) != null) {
@@ -145,26 +149,28 @@ public class ItemKenn extends ItemSword implements IItemRenderer {
     }
 
     public boolean onLeftClickEntity(ItemStack stack, EntityPlayer player, Entity entity) {
+        attack(stack,player,entity);
         return true;
     }
 
 
-    public void attack(ItemStack stack, EntityPlayer player, Entity entity, boolean a) {
+    public boolean attack(ItemStack stack, EntityPlayer player, Entity entity) {
         if (stack.getItemDamage() < DAMAGE && !player.worldObj.isRemote) {
-            double m = 0;
+            double m = 1;
             m += Math.abs(lastMotion.get(player).x - player.posX);
             m += Math.abs(lastMotion.get(player).y - player.posY) * 2;//落下の係数は大きく
             m += Math.abs(lastMotion.get(player).z - player.posZ);
-            m *= 10;
+            m *= 4;
             if (m > 0) {
-                stack.damageItem((int) m, player);
-                entity.attackEntityFrom(DamageSource.causePlayerDamage(player), (int) (m * 2));
+                if(stack.getItemDamage()+(int)m < DAMAGE)
+                    stack.setItemDamage(stack.getItemDamage()+ (int)m);
+                else stack.setItemDamage(DAMAGE + 1);
+                entity.attackEntityFrom(DamageSource.causePlayerDamage(player), (int) (m * 4));
                 player.stopUsingItem();
-                waitTime.put(player, 20);
-            } else if (a) {
-                stack.damageItem(2, player);//攻撃ではなかったら2ダメージを剣が受ける
+                return true;
             }
         }
+        return false;
     }
 
     @SideOnly(Side.CLIENT)

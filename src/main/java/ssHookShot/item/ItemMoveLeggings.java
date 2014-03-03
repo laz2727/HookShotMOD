@@ -82,6 +82,12 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
             if (DataManager.isKeyPress(player, DataManager.keyOpenGUI)) {
                 player.openGui(HookShot.instance, DataManager.moveLeggingsGUIID, player.worldObj, 0, 0, 0);
             }
+
+            if(leftAnchorMap.containsKey(player)&&DataManager.isKeyPress(player,DataManager.keyLeftAnchorRec))
+                player.fallDistance = 0;
+            else if(rightAnchorMap.containsKey(player)&&DataManager.isKeyPress(player,DataManager.keyRightAnchorRec))
+                player.fallDistance = 0;
+
         } else {//クライアント側
             if (DataManager.isKeyPress(player, DataManager.keyMode)) {
                 if (DataManager.PlayerMode(player, DataManager.modeManual)) {
@@ -195,8 +201,6 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
         xyz[0] += Math.sin(rotXZ) * Math.cos(rotY);
         xyz[2] += Math.cos(rotXZ) * Math.cos(rotY);
         xyz[1] += Math.sin(rotY);
-
-        e.fallDistance = 0.0F;
 
         return xyz;
     }

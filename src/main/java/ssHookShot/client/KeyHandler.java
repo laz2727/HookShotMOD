@@ -59,10 +59,10 @@ public class KeyHandler {
             if (keyLeftAnchorShot.isPressed()) {
                 keyData.add(DataManager.keyLeftAnchorShot);
             }
-            if (Keyboard.isKeyDown(keyRightAnchorRec.getKeyCode())) {
+            if (keyRightAnchorRec.getIsKeyPressed()) {
                 keyData.add(DataManager.keyRightAnchorRec);
             }
-            if (Keyboard.isKeyDown(keyLeftAnchorRec.getKeyCode())) {
+            if (keyLeftAnchorRec.getIsKeyPressed()) {
                 keyData.add(DataManager.keyLeftAnchorRec);
             }
             if (keyRightAnchorExtend.isPressed()) {
