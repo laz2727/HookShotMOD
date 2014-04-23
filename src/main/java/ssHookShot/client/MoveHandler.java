@@ -28,16 +28,16 @@ public class MoveHandler {
 
         if (mc.thePlayer.equals(event.player) && event.phase.equals(TickEvent.Phase.START)) {
             if (flag > 0) {
-                mx = x / 2;
-                my = y / 2;
-                mz = z / 2;
+                mx = x;
+                my = y;
+                mz = z;
 
                 if(mc.thePlayer.getCurrentEquippedItem() != null&&mc.thePlayer.getCurrentEquippedItem().getItem() == HookShot.instance.itemSword&&mc.thePlayer.getItemInUseCount() > 0)
                 {
                     mc.thePlayer.rotationYaw += 30;
                     if(mc.thePlayer.rotationYaw > 360)mc.thePlayer.rotationYaw -= 360;
                 }
-                else if(DataManager.isKeyPress(mc.thePlayer, DataManager.keyLeftAnchorRec)||DataManager.isKeyPress(mc.thePlayer, DataManager.keyRightAnchorRec))
+                else if(DataManager.isKeyPress(mc.thePlayer, DataManager.keyLeftAnchorRec)||DataManager.isKeyPress(mc.thePlayer, DataManager.keyRightAnchorRec)||DataManager.PlayerMode(mc.thePlayer, DataManager.modeAuto))
                 {
                     mx += Math.cos(Math.toRadians(mc.thePlayer.rotationYaw + 90))*Math.cos(Math.toRadians(mc.thePlayer.rotationPitch));
                     mz += Math.sin(Math.toRadians(mc.thePlayer.rotationYaw + 90))*Math.cos(Math.toRadians(mc.thePlayer.rotationPitch));
@@ -68,10 +68,10 @@ public class MoveHandler {
                 mc.thePlayer.motionX = mx;
                 mc.thePlayer.motionY = my;
                 mc.thePlayer.motionZ = mz;
-                mx *= 0.975;
-                my *= 0.975;
-                mz *= 0.975;
-            } else if(c == 0){
+                mx *= 0.995;
+                my *= 0.995;
+                mz *= 0.995;
+            } else if(c == 0||mc.thePlayer.onGround){
                 mx = 0;
                 my = 0;
                 mz = 0;
