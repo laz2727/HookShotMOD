@@ -177,6 +177,22 @@ public class EntityAnchor extends EntityArrow implements IProjectile,IThrowableE
             return;
         }
 
+        if(shooter instanceof EntityPlayerMP) {
+            if (side == 1) {
+                Entity e = ItemMoveLeggings.leftAnchorMap.get(this.shooter);
+                if (e == null||(e != null && !e.equals(this))) {
+                    this.setDead();
+                    return;
+                }
+            } else if (side == 0) {
+                Entity e = ItemMoveLeggings.rightAnchorMap.get(this.shooter);
+                if (e == null||(e != null && !e.equals(this))) {
+                    this.setDead();
+                    return;
+                }
+            }
+        }
+
         if(firstUpdate && shooter instanceof EntityPlayerMP)//最初の一回だけ呼ばれる
         {
             this.playSound("random.click", 1.0F, 1.2F / (this.rand.nextFloat() * 0.2F + 0.9F));

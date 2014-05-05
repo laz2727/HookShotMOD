@@ -29,9 +29,9 @@ public class AnchorPullPacket extends AbstractPacket
 
     @Override
     public void decodeInto(ChannelHandlerContext ctx, ByteBuf buffer) {
-        MoveHandler.x = buffer.readDouble();
-        MoveHandler.y = buffer.readDouble();
-        MoveHandler.z = buffer.readDouble();
+        MoveHandler.x = buffer.readDouble()*2;
+        MoveHandler.y = buffer.readDouble()*2;
+        MoveHandler.z = buffer.readDouble()*2;
         MoveHandler.flag = buffer.readInt();
     }
 
