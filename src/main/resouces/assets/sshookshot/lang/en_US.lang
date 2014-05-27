@@ -1,0 +1,21 @@
+key.hookshotMode=Maneuvering Mode
+key.rightAnchorShot=Shoot/Retract Right Anchor
+key.leftAnchorShot=Shoot/Retract Left Anchor
+key.rightAnchorRec=Pull Right Anchor
+key.leftAnchorRec=Pull Left Anchor
+key.rightAnchorExtend=Lengthen Right Anchor
+key.leftAnchorExtend=Lengthen Left Anchor
+key.anchorRec=Disengage Anchors
+key.openGUI=Maneuvering Gear Inventory
+key.reload=Reload Titan Sword
+key.throw=Throw Titan Blades
+
+item.hookshot.name=3D Maneuvering Gear
+item.nennryou.name=Gas Canister
+item.kaeba.name=Titan Blade
+item.oretaha.name=Broken Titan Blade
+item.oretahamatometamono.name=Broken Titan Blade Chunk
+item.kenn.name=Titan Sword
+
+tile.hookshot.auto=Automatic pull enabled
+tile.hookshot.manual=Automatic pull disabled

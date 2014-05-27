@@ -18,17 +18,17 @@ public class KeyHandler {
 
     private static Minecraft mc = FMLClientHandler.instance().getClient();
 
-    private KeyBinding keyMode = new KeyBinding("HookShot Mode", Keyboard.KEY_N, "HookShot");
-    private KeyBinding keyRightAnchorShot = new KeyBinding("RightAnchorShot", Keyboard.KEY_B, "HookShot");
-    private KeyBinding keyLeftAnchorShot = new KeyBinding("LeftAnchorShot", Keyboard.KEY_V, "HookShot");
-    private KeyBinding keyRightAnchorRec = new KeyBinding("RightAnchorRec", Keyboard.KEY_X, "HookShot");
-    private KeyBinding keyLeftAnchorRec = new KeyBinding("LeftAnchorRec", Keyboard.KEY_Z, "HookShot");
-    private KeyBinding keyRightAnchorExtend = new KeyBinding("RightAnchorExtend", Keyboard.KEY_G, "HookShot");
-    private KeyBinding keyLeftAnchorExtend = new KeyBinding("LeftAnchorExtend", Keyboard.KEY_H, "HookShot");
-    private KeyBinding keyAnchorRec = new KeyBinding("AnchorRec", Keyboard.KEY_Y, "HookShot");
-    private KeyBinding keyOpenGUI = new KeyBinding("OpenGUI", Keyboard.KEY_F, "HookShot");
-    private KeyBinding keyReload = new KeyBinding("Reload", Keyboard.KEY_R, "HookShot");
-    private KeyBinding key = new KeyBinding("投げる", Keyboard.KEY_C, "HookShot");
+    private KeyBinding keyMode = new KeyBinding("key.hookshotMode", Keyboard.KEY_N, "HookShot");
+    private KeyBinding keyRightAnchorShot = new KeyBinding("key.rightAnchorShot", Keyboard.KEY_B, "HookShot");
+    private KeyBinding keyLeftAnchorShot = new KeyBinding("key.leftAnchorShot", Keyboard.KEY_V, "HookShot");
+    private KeyBinding keyRightAnchorRec = new KeyBinding("key.rightAnchorRec", Keyboard.KEY_X, "HookShot");
+    private KeyBinding keyLeftAnchorRec = new KeyBinding("key.leftAnchorRec", Keyboard.KEY_Z, "HookShot");
+    private KeyBinding keyRightAnchorExtend = new KeyBinding("key.rightAnchorExtend", Keyboard.KEY_G, "HookShot");
+    private KeyBinding keyLeftAnchorExtend = new KeyBinding("key.leftAnchorExtend", Keyboard.KEY_H, "HookShot");
+    private KeyBinding keyAnchorRec = new KeyBinding("key.anchorRec", Keyboard.KEY_Y, "HookShot");
+    private KeyBinding keyOpenGUI = new KeyBinding("key.openGUI", Keyboard.KEY_F, "HookShot");
+    private KeyBinding keyReload = new KeyBinding("key.reload", Keyboard.KEY_R, "HookShot");
+    private KeyBinding key = new KeyBinding("key.throw", Keyboard.KEY_C, "HookShot");
 
     public KeyHandler() {
         ClientRegistry.registerKeyBinding(keyMode);
