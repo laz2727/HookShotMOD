@@ -13,6 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ISpecialArmor;
@@ -92,10 +93,10 @@ public class ItemMoveLeggings extends ItemArmor implements ISpecialArmor {
             if (DataManager.isKeyPress(player, DataManager.keyMode)) {
                 if (DataManager.PlayerMode(player, DataManager.modeManual)) {
                     DataManager.setPlayerMode(player, DataManager.modeAuto);
-                    player.addChatMessage(new ChatComponentText("自動巻き取り有効化"));
+                    player.addChatMessage(new ChatComponentTranslation("tile.hookshot.auto", new Object[0]));
                 } else if (DataManager.PlayerMode(player, DataManager.modeAuto)) {
                     DataManager.setPlayerMode(player, DataManager.modeManual);
-                    player.addChatMessage(new ChatComponentText("距離の維持有効化"));
+                    player.addChatMessage(new ChatComponentTranslation("tile.hookshot.manual", new Object[0]));
                 }
             }
 
