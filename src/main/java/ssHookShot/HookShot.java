@@ -32,7 +32,6 @@ public class HookShot {
     public Item itemBladeChank;
     public Item itemSword;
 
-
     @SidedProxy(clientSide = "ssHookShot.client.ClientProxy", serverSide = "ssHookShot.system.CommonProxy")
     public static CommonProxy proxy;
 
