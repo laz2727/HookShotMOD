@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.WeakHashMap;
 
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -74,13 +75,13 @@ public class ItemKenn extends ItemSword implements IItemRenderer {
                     waitTime.put(p, waitTime.get(p) - 1);//1へらす
 
                 if (par5 && p.isUsingItem()) {
-                    List<Entity> list = p.worldObj.getEntitiesWithinAABB(Entity.class, p.boundingBox.expand(3, 3, 3));
-                    Iterator<Entity> it = list.iterator();
+                    List list = p.worldObj.getEntitiesWithinAABB(Entity.class, p.boundingBox.expand(3, 3, 3));
+                    Iterator it = list.iterator();
 
 
                     boolean flag = false;
                     while (it.hasNext()) {
-                        Entity e = it.next();
+                        Entity e = (Entity) it.next();
                         if (!(e instanceof EntityXPOrb) && !(e instanceof EntityItem) && e != p)//もってる人と経験値とアイテムには攻撃しない
                         {
                             boolean a = attack(par1ItemStack, p, e);
@@ -196,8 +197,8 @@ public class ItemKenn extends ItemSword implements IItemRenderer {
         return this.iconArray[1];
     }
 
-    public boolean onBlockDestroyed(ItemStack par1ItemStack, World par2World, int par3, int par4, int par5, int par6, EntityLivingBase par7EntityLivingBase) {
-        //何もしない
+    public boolean onBlockDestroyed(ItemStack p_150894_1_, World p_150894_2_, Block p_150894_3_, int p_150894_4_, int p_150894_5_, int p_150894_6_, EntityLivingBase p_150894_7_)
+    {
         return true;
     }
 
